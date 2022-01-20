@@ -4,15 +4,28 @@
   <meta charset="utf-8">
   
   
-  <title>东临个人博客</title>
+  <title>Flink 基础 | 东临个人博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="东临个人博客">
-<meta property="og:url" content="https://donglin.github.io/index.html">
+  <meta name="description" content="集群架构Flink 运行时由两种类型的进程组成：一个 JobManager 和一个或者多个 TaskManager。  JobManager决定何时调度下一个 task（或一组 task）、对完成的 task 或执行失败做出反应、协调 checkpoint、并且协调从失败中恢复等等  RegisterTaskManager: 它由想要注册到JobManager的TaskManager发送。注册成功">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Flink 基础">
+<meta property="og:url" content="https://donglin.github.io/2020/11/30/Flink%E5%9F%BA%E7%A1%80/index.html">
 <meta property="og:site_name" content="东临个人博客">
+<meta property="og:description" content="集群架构Flink 运行时由两种类型的进程组成：一个 JobManager 和一个或者多个 TaskManager。  JobManager决定何时调度下一个 task（或一组 task）、对完成的 task 或执行失败做出反应、协调 checkpoint、并且协调从失败中恢复等等  RegisterTaskManager: 它由想要注册到JobManager的TaskManager发送。注册成功">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://gitee.com/lei9388/cloud-img/raw/master/image-20210220113156785.png">
+<meta property="og:image" content="https://gitee.com/lei9388/cloud-img/raw/master/image-20210407143331513.png">
+<meta property="og:image" content="https://gitee.com/lei9388/cloud-img/raw/master/TB1tA_GJFXXXXapXFXXXXXXXXXX.png">
+<meta property="og:image" content="https://gitee.com/lei9388/cloud-img/raw/master/image-20210220143223415.png">
+<meta property="og:image" content="https://gitee.com/lei9388/cloud-img/raw/master/image-20210406150827481.png">
+<meta property="og:image" content="https://gitee.com/lei9388/cloud-img/raw/master/image-20210406141848956.png">
+<meta property="article:published_time" content="2020-11-30T12:46:25.000Z">
+<meta property="article:modified_time" content="2022-01-20T16:06:32.117Z">
 <meta property="article:author" content="东临">
+<meta property="article:tag" content="Flink">
+<meta property="article:tag" content="基础">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://gitee.com/lei9388/cloud-img/raw/master/image-20210220113156785.png">
   
     <link rel="alternate" href="/atom.xml" title="东临个人博客" type="application/atom+xml">
   
@@ -69,60 +82,7 @@
 </header>
 
       <div class="outer">
-        <section id="main">
-  
-    <article id="post-hello-world" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/01/20/hello-world/" class="article-date">
-  <time class="dt-published" datetime="2022-01-20T07:16:27.041Z" itemprop="datePublished">2022-01-20</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/01/20/hello-world/">Hello World</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://donglin.github.io/2022/01/20/hello-world/" data-id="ckyn62mvg0000u8tob2da9uh3" data-title="Hello World" class="article-share-link">分享</a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Flink基础" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+        <section id="main"><article id="post-Flink基础" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2020/11/30/Flink%E5%9F%BA%E7%A1%80/" class="article-date">
   <time class="dt-published" datetime="2020-11-30T12:46:25.000Z" itemprop="datePublished">2020-11-30</time>
@@ -139,8 +99,8 @@
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2020/11/30/Flink%E5%9F%BA%E7%A1%80/">Flink 基础</a>
+    <h1 class="p-name article-title" itemprop="headline name">
+      Flink 基础
     </h1>
   
 
@@ -298,11 +258,23 @@
     </footer>
   </div>
   
-</article>
-
-
+    
+<nav id="article-nav">
+  
+    <a href="/2022/01/20/hello-world/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前一篇</strong>
+      <div class="article-nav-title">
+        
+          Hello World
+        
+      </div>
+    </a>
+  
+  
+</nav>
 
   
+</article>
 
 
 </section>
