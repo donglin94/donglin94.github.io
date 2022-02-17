@@ -23,7 +23,7 @@
   <meta name="description" content="集群架构Flink 运行时由两种类型的进程组成：一个 JobManager 和一个或者多个 TaskManager。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Flink 基础">
-<meta property="og:url" content="https://donglin.github.io/2021/11/30/Flink%E5%9F%BA%E7%A1%80/index.html">
+<meta property="og:url" content="https://donglin.github.io/2022/01/30/Flink%E5%9F%BA%E7%A1%80/index.html">
 <meta property="og:site_name" content="Dlin&#39;s Blog">
 <meta property="og:description" content="集群架构Flink 运行时由两种类型的进程组成：一个 JobManager 和一个或者多个 TaskManager。">
 <meta property="og:locale" content="zh_CN">
@@ -33,14 +33,14 @@
 <meta property="og:image" content="https://gitee.com/lei9388/cloud-img/raw/master/image-20210220143223415.png">
 <meta property="og:image" content="https://gitee.com/lei9388/cloud-img/raw/master/image-20210406150827481.png">
 <meta property="og:image" content="https://gitee.com/lei9388/cloud-img/raw/master/image-20210406141848956.png">
-<meta property="article:published_time" content="2021-11-30T12:46:25.000Z">
-<meta property="article:modified_time" content="2022-02-09T05:25:51.141Z">
+<meta property="article:published_time" content="2022-01-30T12:46:25.000Z">
+<meta property="article:modified_time" content="2022-02-17T07:40:42.270Z">
 <meta property="article:author" content="东临">
 <meta property="article:tag" content="Flink">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://gitee.com/lei9388/cloud-img/raw/master/image-20210220113156785.png">
 
-<link rel="canonical" href="https://donglin.github.io/2021/11/30/Flink%E5%9F%BA%E7%A1%80/">
+<link rel="canonical" href="https://donglin.github.io/2022/01/30/Flink%E5%9F%BA%E7%A1%80/">
 
 
 <script id="page-configurations">
@@ -178,7 +178,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://donglin.github.io/2021/11/30/Flink%E5%9F%BA%E7%A1%80/">
+    <link itemprop="mainEntityOfPage" href="https://donglin.github.io/2022/01/30/Flink%E5%9F%BA%E7%A1%80/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -201,14 +201,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2021-11-30 20:46:25" itemprop="dateCreated datePublished" datetime="2021-11-30T20:46:25+08:00">2021-11-30</time>
+              <time title="创建时间：2022-01-30 20:46:25" itemprop="dateCreated datePublished" datetime="2022-01-30T20:46:25+08:00">2022-01-30</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-02-09 13:25:51" itemprop="dateModified" datetime="2022-02-09T13:25:51+08:00">2022-02-09</time>
+                <time title="修改时间：2022-02-17 15:40:42" itemprop="dateModified" datetime="2022-02-17T15:40:42+08:00">2022-02-17</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -347,7 +347,22 @@
 <li>适合规模小，执行时间段的作业</li>
 </ul>
 <hr>
-<h2 id="重点"><a href="#重点" class="headerlink" title="重点"></a>重点</h2><h3 id="Checkpoint"><a href="#Checkpoint" class="headerlink" title="Checkpoint"></a>Checkpoint</h3><h3 id="State"><a href="#State" class="headerlink" title="State"></a>State</h3><h3 id="Time"><a href="#Time" class="headerlink" title="Time"></a>Time</h3><h3 id="Window"><a href="#Window" class="headerlink" title="Window"></a>Window</h3><h3 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h3><p><img src="https://gitee.com/lei9388/cloud-img/raw/master/image-20210406150827481.png" alt="image-20210406150827481"></p>
+<h2 id="重点"><a href="#重点" class="headerlink" title="重点"></a>重点</h2><h3 id="Checkpoint"><a href="#Checkpoint" class="headerlink" title="Checkpoint"></a>Checkpoint</h3><h3 id="State"><a href="#State" class="headerlink" title="State"></a>State</h3><h4 id="计算状态分类"><a href="#计算状态分类" class="headerlink" title="计算状态分类"></a>计算状态分类</h4><p>无状态计算：每一次计算结果只和输入数据有关，之 前的计算或者外部状态对它不会产生任何影响。</p>
+<p>有状态计算：当前的计算结果会受到之前计算结果的影响，Flink 所有状态原语可以分为 Keyed State 和 Operator State 两类，其中Operator State应用较少</p>
+<p>Keyed State：即分区状态。分区状态的好处是可以把已有状态按逻辑提供的分区 分成不同的块。块内的计算和状态都是绑定在一起的，而不同的 Key 值之间的计算 和状态的读写都是隔离的</p>
+<h4 id="有状态的计算实现"><a href="#有状态的计算实现" class="headerlink" title="有状态的计算实现"></a>有状态的计算实现</h4><p>​    sparkStreaming：把状态数据进入算子之前就给提取出来，然后把这个状态数据和输入数 据合并在一起，再把它们同时输入到算子中，得到一个输出，好处是是可以重用已有的无状态算子</p>
+<p>​    flink：是算子本身是有状态的，算子在每一次到新数 据之后做计算的时候，同时考虑新输数据和已有的状态对计算过程的影响，最终把结 果输出出去</p>
+<h4 id="KeyedState-使用方法"><a href="#KeyedState-使用方法" class="headerlink" title="KeyedState 使用方法"></a>KeyedState 使用方法</h4><ol>
+<li>只能用于 RichFunction</li>
+<li>将 State 声明为实例变量<ul>
+<li>创建一个 StateDescriptor</li>
+<li>利用 getRuntimeContext().getState(…) 获得State</li>
+</ul>
+</li>
+<li>在 open() 方法中为 State 赋值</li>
+<li>调用 State 的方法进行读写 （例如：state.value(),state.update()）</li>
+</ol>
+<h3 id="Time"><a href="#Time" class="headerlink" title="Time"></a>Time</h3><h3 id="Window"><a href="#Window" class="headerlink" title="Window"></a>Window</h3><h3 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h3><p><img src="https://gitee.com/lei9388/cloud-img/raw/master/image-20210406150827481.png" alt="image-20210406150827481"></p>
 <ul>
 <li><p><strong>Network Buffers:</strong> 一定数量的32KB大小的 buffer，主要用于数据的网络传输。在 TaskManager 启动的时候就会分配。默认数量是 2048 个，可以通过 <code>taskmanager.network.numberOfBuffers</code> 来配置。</p>
 </li>
@@ -392,11 +407,11 @@
 
         
     <div class="post-nav">
-      <div class="post-nav-item"></div>
       <div class="post-nav-item">
-    <a href="/2022/01/20/hello-world/" rel="next" title="Hello World">
-      Hello World <i class="fa fa-chevron-right"></i>
+    <a href="/2022/01/20/hello-world/" rel="prev" title="Hello World">
+      <i class="fa fa-chevron-left"></i> Hello World
     </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -455,7 +470,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4%E6%9E%B6%E6%9E%84"><span class="nav-number">1.</span> <span class="nav-text">集群架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#JobManager"><span class="nav-number">1.1.</span> <span class="nav-text">JobManager</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TaskManagers"><span class="nav-number">1.2.</span> <span class="nav-text">TaskManagers</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Client"><span class="nav-number">1.3.</span> <span class="nav-text">Client</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Graph"><span class="nav-number">1.4.</span> <span class="nav-text">Graph</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B"><span class="nav-number">2.</span> <span class="nav-text">编程模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Source"><span class="nav-number">2.1.</span> <span class="nav-text">Source</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Transformation"><span class="nav-number">2.2.</span> <span class="nav-text">Transformation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Sink"><span class="nav-number">2.3.</span> <span class="nav-text">Sink</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A1%E6%8F%90%E4%BA%A4"><span class="nav-number">3.</span> <span class="nav-text">任务提交</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4%E8%A1%8C"><span class="nav-number">3.1.</span> <span class="nav-text">命令行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%9C%E4%B8%9A%E6%89%A7%E8%A1%8C%E6%A8%A1%E5%BC%8F%E5%8C%BA%E5%88%AB"><span class="nav-number">3.2.</span> <span class="nav-text">作业执行模式区别</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Per-Job"><span class="nav-number">3.2.1.</span> <span class="nav-text">Per-Job</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Session"><span class="nav-number">3.2.1.1.</span> <span class="nav-text">Session</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8D%E7%82%B9"><span class="nav-number">4.</span> <span class="nav-text">重点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Checkpoint"><span class="nav-number">4.1.</span> <span class="nav-text">Checkpoint</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#State"><span class="nav-number">4.2.</span> <span class="nav-text">State</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Time"><span class="nav-number">4.3.</span> <span class="nav-text">Time</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Window"><span class="nav-number">4.4.</span> <span class="nav-text">Window</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86"><span class="nav-number">4.5.</span> <span class="nav-text">内存管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%8D%E5%8E%8B"><span class="nav-number">4.6.</span> <span class="nav-text">反压</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4%E6%9E%B6%E6%9E%84"><span class="nav-number">1.</span> <span class="nav-text">集群架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#JobManager"><span class="nav-number">1.1.</span> <span class="nav-text">JobManager</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TaskManagers"><span class="nav-number">1.2.</span> <span class="nav-text">TaskManagers</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Client"><span class="nav-number">1.3.</span> <span class="nav-text">Client</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Graph"><span class="nav-number">1.4.</span> <span class="nav-text">Graph</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B"><span class="nav-number">2.</span> <span class="nav-text">编程模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Source"><span class="nav-number">2.1.</span> <span class="nav-text">Source</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Transformation"><span class="nav-number">2.2.</span> <span class="nav-text">Transformation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Sink"><span class="nav-number">2.3.</span> <span class="nav-text">Sink</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A1%E6%8F%90%E4%BA%A4"><span class="nav-number">3.</span> <span class="nav-text">任务提交</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4%E8%A1%8C"><span class="nav-number">3.1.</span> <span class="nav-text">命令行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%9C%E4%B8%9A%E6%89%A7%E8%A1%8C%E6%A8%A1%E5%BC%8F%E5%8C%BA%E5%88%AB"><span class="nav-number">3.2.</span> <span class="nav-text">作业执行模式区别</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Per-Job"><span class="nav-number">3.2.1.</span> <span class="nav-text">Per-Job</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Session"><span class="nav-number">3.2.1.1.</span> <span class="nav-text">Session</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8D%E7%82%B9"><span class="nav-number">4.</span> <span class="nav-text">重点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Checkpoint"><span class="nav-number">4.1.</span> <span class="nav-text">Checkpoint</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#State"><span class="nav-number">4.2.</span> <span class="nav-text">State</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%A1%E7%AE%97%E7%8A%B6%E6%80%81%E5%88%86%E7%B1%BB"><span class="nav-number">4.2.1.</span> <span class="nav-text">计算状态分类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%89%E7%8A%B6%E6%80%81%E7%9A%84%E8%AE%A1%E7%AE%97%E5%AE%9E%E7%8E%B0"><span class="nav-number">4.2.2.</span> <span class="nav-text">有状态的计算实现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#KeyedState-%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95"><span class="nav-number">4.2.3.</span> <span class="nav-text">KeyedState 使用方法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Time"><span class="nav-number">4.3.</span> <span class="nav-text">Time</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Window"><span class="nav-number">4.4.</span> <span class="nav-text">Window</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86"><span class="nav-number">4.5.</span> <span class="nav-text">内存管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%8D%E5%8E%8B"><span class="nav-number">4.6.</span> <span class="nav-text">反压</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 

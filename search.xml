@@ -22,7 +22,7 @@
   </entry>
   <entry>
     <title>Flink 基础</title>
-    <url>/2021/11/30/Flink%E5%9F%BA%E7%A1%80/</url>
+    <url>/2022/01/30/Flink%E5%9F%BA%E7%A1%80/</url>
     <content><![CDATA[<h2 id="集群架构"><a href="#集群架构" class="headerlink" title="集群架构"></a>集群架构</h2><p>Flink 运行时由两种类型的进程组成：一个 <em>JobManager</em> 和一个或者多个 <em>TaskManager</em>。<span id="more"></span></p>
 <p><img src="https://gitee.com/lei9388/cloud-img/raw/master/image-20210220113156785.png" alt="image-20210220113156785"></p>
 <h3 id="JobManager"><a href="#JobManager" class="headerlink" title="JobManager"></a>JobManager</h3><p>决定何时调度下一个 task（或一组 task）、对完成的 task 或执行失败做出反应、协调 checkpoint、并且协调从失败中恢复等等</p>
@@ -132,7 +132,22 @@
 <li>适合规模小，执行时间段的作业</li>
 </ul>
 <hr>
-<h2 id="重点"><a href="#重点" class="headerlink" title="重点"></a>重点</h2><h3 id="Checkpoint"><a href="#Checkpoint" class="headerlink" title="Checkpoint"></a>Checkpoint</h3><h3 id="State"><a href="#State" class="headerlink" title="State"></a>State</h3><h3 id="Time"><a href="#Time" class="headerlink" title="Time"></a>Time</h3><h3 id="Window"><a href="#Window" class="headerlink" title="Window"></a>Window</h3><h3 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h3><p><img src="https://gitee.com/lei9388/cloud-img/raw/master/image-20210406150827481.png" alt="image-20210406150827481"></p>
+<h2 id="重点"><a href="#重点" class="headerlink" title="重点"></a>重点</h2><h3 id="Checkpoint"><a href="#Checkpoint" class="headerlink" title="Checkpoint"></a>Checkpoint</h3><h3 id="State"><a href="#State" class="headerlink" title="State"></a>State</h3><h4 id="计算状态分类"><a href="#计算状态分类" class="headerlink" title="计算状态分类"></a>计算状态分类</h4><p>无状态计算：每一次计算结果只和输入数据有关，之 前的计算或者外部状态对它不会产生任何影响。</p>
+<p>有状态计算：当前的计算结果会受到之前计算结果的影响，Flink 所有状态原语可以分为 Keyed State 和 Operator State 两类，其中Operator State应用较少</p>
+<p>Keyed State：即分区状态。分区状态的好处是可以把已有状态按逻辑提供的分区 分成不同的块。块内的计算和状态都是绑定在一起的，而不同的 Key 值之间的计算 和状态的读写都是隔离的</p>
+<h4 id="有状态的计算实现"><a href="#有状态的计算实现" class="headerlink" title="有状态的计算实现"></a>有状态的计算实现</h4><p>​    sparkStreaming：把状态数据进入算子之前就给提取出来，然后把这个状态数据和输入数 据合并在一起，再把它们同时输入到算子中，得到一个输出，好处是是可以重用已有的无状态算子</p>
+<p>​    flink：是算子本身是有状态的，算子在每一次到新数 据之后做计算的时候，同时考虑新输数据和已有的状态对计算过程的影响，最终把结 果输出出去</p>
+<h4 id="KeyedState-使用方法"><a href="#KeyedState-使用方法" class="headerlink" title="KeyedState 使用方法"></a>KeyedState 使用方法</h4><ol>
+<li>只能用于 RichFunction</li>
+<li>将 State 声明为实例变量<ul>
+<li>创建一个 StateDescriptor</li>
+<li>利用 getRuntimeContext().getState(…) 获得State</li>
+</ul>
+</li>
+<li>在 open() 方法中为 State 赋值</li>
+<li>调用 State 的方法进行读写 （例如：state.value(),state.update()）</li>
+</ol>
+<h3 id="Time"><a href="#Time" class="headerlink" title="Time"></a>Time</h3><h3 id="Window"><a href="#Window" class="headerlink" title="Window"></a>Window</h3><h3 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h3><p><img src="https://gitee.com/lei9388/cloud-img/raw/master/image-20210406150827481.png" alt="image-20210406150827481"></p>
 <ul>
 <li><p><strong>Network Buffers:</strong> 一定数量的32KB大小的 buffer，主要用于数据的网络传输。在 TaskManager 启动的时候就会分配。默认数量是 2048 个，可以通过 <code>taskmanager.network.numberOfBuffers</code> 来配置。</p>
 </li>
