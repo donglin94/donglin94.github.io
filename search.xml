@@ -2,7 +2,7 @@
 <search>
   <entry>
     <title>ClickHouse 集群搭建</title>
-    <url>/2022/02/01/ClickHouse%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA/</url>
+    <url>/posts/e8a6588f.html</url>
     <content><![CDATA[<h2 id="人群圈选业务痛点"><a href="#人群圈选业务痛点" class="headerlink" title="人群圈选业务痛点"></a>人群圈选业务痛点</h2><ul>
 <li>用户标签多、标签丰富，标签列可达成百甚至上千列。</li>
 <li>数据量庞大，用户数多，从而所需运算量也极大。<span id="more"></span></li>
@@ -67,7 +67,7 @@
   </entry>
   <entry>
     <title>Flink 基础</title>
-    <url>/2022/01/30/Flink%E5%9F%BA%E7%A1%80/</url>
+    <url>/posts/94337cde.html</url>
     <content><![CDATA[<h2 id="集群架构"><a href="#集群架构" class="headerlink" title="集群架构"></a>集群架构</h2><p>Flink 运行时由两种类型的进程组成：一个 <em>JobManager</em> 和一个或者多个 <em>TaskManager</em>。<span id="more"></span></p>
 <p><img src="https://gitee.com/lei9388/cloud-img/raw/master/image-20210220113156785.png" alt="image-20210220113156785"></p>
 <h3 id="JobManager"><a href="#JobManager" class="headerlink" title="JobManager"></a>JobManager</h3><p>决定何时调度下一个 task（或一组 task）、对完成的 task 或执行失败做出反应、协调 checkpoint、并且协调从失败中恢复等等</p>
@@ -254,7 +254,7 @@
   </entry>
   <entry>
     <title>统计HDFS小文件</title>
-    <url>/2022/02/02/%E7%BB%9F%E8%AE%A1HDFS%E5%B0%8F%E6%96%87%E4%BB%B6/</url>
+    <url>/posts/c11a5a42.html</url>
     <content><![CDATA[<h2 id="导出FSimage"><a href="#导出FSimage" class="headerlink" title="导出FSimage"></a>导出FSimage</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[root@worker03 PGDataShop]$ mkdir metta</span><br><span class="line"></span><br><span class="line">[root@worker03 PGDataShop]$ hdfs dfsadmin -fetchImage metta/</span><br><span class="line"></span><br><span class="line">[root@worker03 metta]$ ll</span><br><span class="line">total 960808</span><br><span class="line">-rw-rw-r-- 1 root root 983861710 May 20 16:24 fsimage_0000000000616506859</span><br></pre></td></tr></table></figure>
 
 <span id="more"></span>
