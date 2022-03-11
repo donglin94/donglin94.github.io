@@ -11,7 +11,7 @@ doris-flink-connector 版本：1.13.5-2.12-SNAPSHOT
 <span id="more"></span>
 
 <h3 id="同步方案"><a href="#同步方案" class="headerlink" title="同步方案"></a>同步方案</h3><ul>
-<li>Sql-Client 开发：当数据库实例、表数量过多，单实例单表最少占用1个 solt；存在浪费资源，并且会对binlog有影响</li>
+<li>Sql-Client 开发：当数据库实例、表数量过多，单实例单表最少占用1个 solt，存在浪费资源，并且会对binlog有影响</li>
 <li>DataStream 开发：整库同步，需要自行编写下游处理逻辑；可以做到资源弹性，具体参考<a href="https://doris.apache.org/zh-CN/extending-doris/flink-doris-connector.html#%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95">Flink Doris Connector</a></li>
 </ul>
 <p>选择 DataStream 开发，根据表 Schema 将 changelog 转换为 RowData</p>
@@ -36,14 +36,14 @@ doris-flink-connector 版本：1.13.5-2.12-SNAPSHOT
 <p>修改源码com.ververica.cdc.connectors.mysql.source.connection.PooledDataSourceFactory.java 中CONVERT_TO_NULL 改为 convertToNull</p>
 </li>
 <li><p><strong>Source Coordinator Thread already exists. There should never be more than one thread driving the actions of a Source Coordinator</strong></p>
-<p>原因是jm的java.lang.OutOfMemoryError: Java heap space。即使在全量阶段加大资源，进入增量后如果缩小jm资源，还是有这个错误。参考 <a href="https://issues.apache.org/jira/browse/FLINK-24855">jira issue</a></p>
+<p>原因是jm的java.lang.OutOfMemoryError: Java heap space。即使在全量阶段加大资源，进入增量后如果缩小jm资源，问题还是存在。参考 <a href="https://issues.apache.org/jira/browse/FLINK-24855">jira issue</a></p>
 </li>
 </ol>
 <hr>
 <h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ol>
 <li><a href="http://palo.baidu.com/docs/%E4%B8%8B%E8%BD%BD%E4%B8%93%E5%8C%BA/%E9%A2%84%E7%BC%96%E8%AF%91%E7%89%88%E6%9C%AC%E4%B8%8B%E8%BD%BD/">Palo文档PALO - 预编译版本下载 | Doris (baidu.com)</a></li>
 <li><a href="https://github.com/ververica/flink-cdc-connectors/wiki/FAQ(ZH)">FAQ(中文) · ververica/flink-cdc-connectors</a></li>
-<li><a href="https://jiafeng2022.oss-cn-beijing.aliyuncs.com/doris-flink-connector-1.13.3-2.12-1.0.0-SNAPSHOT.jar">doris flink connector</a></li>
+<li><a href="https://jiafeng2022.oss-cn-beijing.aliyuncs.com/doris-flink-connector-1.13.3-2.12-1.0.0-SNAPSHOT.jar">doris flink connector下载</a></li>
 </ol>
 ]]></content>
       <categories>
