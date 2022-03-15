@@ -121,6 +121,28 @@ doris-flink-connector 版本：1.13.5-2.12-SNAPSHOT
       </tags>
   </entry>
   <entry>
+    <title>统计HDFS小文件</title>
+    <url>/posts/c11a5a42.html</url>
+    <content><![CDATA[<h2 id="导出FSimage"><a href="#导出FSimage" class="headerlink" title="导出FSimage"></a>导出FSimage</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[root@worker03 PGDataShop]$ mkdir metta</span><br><span class="line"></span><br><span class="line">[root@worker03 PGDataShop]$ hdfs dfsadmin -fetchImage metta/</span><br><span class="line"></span><br><span class="line">[root@worker03 metta]$ ll</span><br><span class="line">total 960808</span><br><span class="line">-rw-rw-r-- 1 root root 983861710 May 20 16:24 fsimage_0000000000616506859</span><br></pre></td></tr></table></figure>
+
+<span id="more"></span>
+
+<h2 id="将文件转换为csv"><a href="#将文件转换为csv" class="headerlink" title="将文件转换为csv"></a>将文件转换为csv</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[root@worker03 metta]$ hdfs oiv -i fsimage_0000000000616506859  -o fsimage.csv -p Delimited</span><br><span class="line">SLF4J: Class path contains multiple SLF4J bindings.</span><br><span class="line">SLF4J: Found binding in [jar:file:/opt/cloudera/parcels/CDH-6.3.2-1.cdh6.3.2.p0.1605554/jars/slf4j-log4j12-1.7.25.jar!/org/slf4j/impl/StaticLoggerBinder.class]</span><br><span class="line">SLF4J: Found binding in [jar:file:/opt/cloudera/parcels/CDH-6.3.2-1.cdh6.3.2.p0.1605554/jars/avro-tools-1.8.2-cdh6.3.2.jar!/org/slf4j/impl/StaticLoggerBinder.clas                                          s]</span><br><span class="line">SLF4J: Found binding in [jar:file:/opt/cloudera/parcels/CDH-6.3.2-1.cdh6.3.2.p0.1605554/jars/hive-jdbc-2.1.1-cdh6.3.2-standalone.jar!/org/slf4j/impl/StaticLoggerB                                          inder.class]</span><br><span class="line">SLF4J: Found binding in [jar:file:/opt/cloudera/parcels/CDH-6.3.2-1.cdh6.3.2.p0.1605554/jars/log4j-slf4j-impl-2.8.2.jar!/org/slf4j/impl/StaticLoggerBinder.class]</span><br><span class="line">SLF4J: Found binding in [jar:file:/opt/cloudera/parcels/CDH-6.3.2-1.cdh6.3.2.p0.1605554/jars/parquet-tools-1.9.0-cdh6.3.2.jar!/org/slf4j/impl/StaticLoggerBinder.c                                          lass]</span><br><span class="line">SLF4J: Found binding in [jar:file:/opt/cloudera/parcels/CDH-6.3.2-1.cdh6.3.2.p0.1605554/jars/slf4j-simple-1.7.25.jar!/org/slf4j/impl/StaticLoggerBinder.class]</span><br><span class="line">SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.</span><br><span class="line">SLF4J: Actual binding is of type [org.slf4j.impl.Log4jLoggerFactory]</span><br><span class="line">21/05/20 16:25:32 INFO offlineImageViewer.PBImageTextWriter: Loading string table</span><br><span class="line">21/05/20 16:25:32 INFO offlineImageViewer.FSImageHandler: Loading 55 strings</span><br><span class="line">21/05/20 16:25:32 INFO offlineImageViewer.PBImageTextWriter: Loading inode references</span><br><span class="line">21/05/20 16:25:32 INFO offlineImageViewer.FSImageHandler: Loading inode references</span><br><span class="line">21/05/20 16:25:32 INFO offlineImageViewer.FSImageHandler: Loaded 0 inode references</span><br><span class="line">21/05/20 16:25:32 INFO offlineImageViewer.PBImageTextWriter: Loading directories</span><br><span class="line">21/05/20 16:25:32 INFO offlineImageViewer.PBImageTextWriter: Loading directories in INode section.</span><br><span class="line">21/05/20 16:25:54 INFO offlineImageViewer.PBImageTextWriter: Found 251012 directories in INode section.</span><br><span class="line">21/05/20 16:25:54 INFO offlineImageViewer.PBImageTextWriter: Finished loading directories in 21593ms</span><br><span class="line">21/05/20 16:25:54 INFO offlineImageViewer.PBImageTextWriter: Loading INode directory section.</span><br><span class="line">21/05/20 16:25:57 INFO offlineImageViewer.PBImageTextWriter: Scanned 241365 INode directories to build namespace.</span><br><span class="line">21/05/20 16:25:57 INFO offlineImageViewer.PBImageTextWriter: Finished loading INode directory section in 3721ms</span><br><span class="line">21/05/20 16:25:57 INFO offlineImageViewer.PBImageTextWriter: Found 8217157 INodes in the INode section</span><br><span class="line">21/05/20 16:28:35 INFO offlineImageViewer.PBImageTextWriter: Outputted 8217157 INodes.</span><br></pre></td></tr></table></figure>
+
+<h2 id="将文件映射为Hive表"><a href="#将文件映射为Hive表" class="headerlink" title="将文件映射为Hive表"></a>将文件映射为Hive表</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[root@worker03 metta]$ hdfs dfs -copyFromLocal fsimage.csv /tmp/fsimage.csv</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">## 创建meta表</span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">EXTERNAL</span> <span class="keyword">TABLE</span> test.HDFS_META (</span><br><span class="line">	path STRING,</span><br><span class="line">	repl <span class="type">INT</span>,</span><br><span class="line">	ModificationTime STRING,</span><br><span class="line">	AccessTime STRING,</span><br><span class="line">	PreferredBlockSize <span class="type">INT</span>,</span><br><span class="line">	BlocksCount <span class="type">INT</span>,</span><br><span class="line">	FileSize <span class="type">INT</span>,</span><br><span class="line">	NSQUOTA <span class="type">INT</span>,</span><br><span class="line">	DSQUOTA <span class="type">INT</span>,</span><br><span class="line">	Permission STRING,</span><br><span class="line">	UserName STRING,</span><br><span class="line">	GroupName STRING </span><br><span class="line">) <span class="type">ROW</span> FORMAT DELIMITED FIELDS TERMINATED <span class="keyword">BY</span> <span class="string">&#x27;\t&#x27;</span> tblproperties (</span><br><span class="line">&quot;skip.header.line.count&quot; <span class="operator">=</span> &quot;1&quot;)</span><br><span class="line"></span><br><span class="line">## 加载数据</span><br><span class="line">load data inpath <span class="string">&#x27;/tmp/fsimage.csv&#x27;</span> overwrite <span class="keyword">into</span> <span class="keyword">table</span> test.hdfs_meta;</span><br><span class="line"></span><br><span class="line">## 统计<span class="keyword">sql</span></span><br><span class="line"><span class="keyword">SELECT</span></span><br><span class="line">	strleft ( path, instr( path, <span class="string">&#x27;/&#x27;</span>, <span class="number">1</span>, <span class="number">5</span> )<span class="operator">-</span> <span class="number">1</span> ) basepath,</span><br><span class="line">	<span class="built_in">sum</span>( blockscount ) blockscount,</span><br><span class="line">	<span class="built_in">sum</span>( filesize ) filesizes,</span><br><span class="line">	<span class="built_in">count</span>(<span class="operator">*</span>) file_nums </span><br><span class="line"><span class="keyword">FROM</span></span><br><span class="line">	hdfs_meta </span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span></span><br><span class="line">	basepath </span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span></span><br><span class="line">	blockscount <span class="keyword">DESC</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="https://gitee.com/lei9388/cloud-img/raw/master/image-20220221181233652.png" alt="image-20220221181233652"></p>
+]]></content>
+      <categories>
+        <category>大数据组件</category>
+      </categories>
+      <tags>
+        <tag>HDFS</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Flink 基础</title>
     <url>/posts/94337cde.html</url>
     <content><![CDATA[<h2 id="集群架构"><a href="#集群架构" class="headerlink" title="集群架构"></a>集群架构</h2><p>Flink 运行时由两种类型的进程组成：一个 <em>JobManager</em> 和一个或者多个 <em>TaskManager</em>。<span id="more"></span></p>
@@ -133,27 +155,6 @@ doris-flink-connector 版本：1.13.5-2.12-SNAPSHOT
 <li>UpdateTaskExecutionState: 由TaskManager发送，用来更新执行节点(ExecutionVertex)的状态。成功则返回true，否则返回false。</li>
 <li>RequestNextInputSplit: TaskManager上的Task请求下一个输入split，成功则返回NextInputSplit，否则返回null。</li>
 <li>JobStatusChanged： 它意味着作业的状态(RUNNING, CANCELING, FINISHED,等)发生变化。这个消息由ExecutionGraph发送。</li>
-</ul>
-<p>任务调度时机是由调度策略（SchedulingStrategy）来控制的</p>
-<ul>
-<li>事件驱动<ul>
-<li>作业开始调度</li>
-<li>任务状态变化</li>
-<li>任务产出的数据可消费</li>
-<li>失败任务需要重启</li>
-</ul>
-</li>
-<li>任务调度策略<ul>
-<li><strong><del>Eager（1.11移除）</del></strong> 适用于流式任务,同时调度所有task</li>
-<li><strong><del>lazy from sources（1.11移除）</del></strong> 适用于批处理，当上游数据准备好后，开始vertices调度</li>
-<li><strong>Piplined region based（1.11加入）</strong>1.11起作为默认调度策略</li>
-</ul>
-</li>
-<li>任务失败策略<ul>
-<li><strong>RestartPipelinedRegion</strong> 重启失败任务所在的Region及任务下游所有Region</li>
-<li><strong>RestartAllFailoverStrategy</strong> 重启作业中所有任务，不经常用</li>
-</ul>
-</li>
 </ul>
 <h3 id="TaskManagers"><a href="#TaskManagers" class="headerlink" title="TaskManagers"></a>TaskManagers</h3><p><em>TaskManager</em>（也称为 <em>worker</em>）执行作业流的 task，并且缓存和交换数据流，任务执行的并行性由每个 Task Manager 上可用的Task Slot决定</p>
 <h3 id="Client"><a href="#Client" class="headerlink" title="Client"></a>Client</h3><p>负责接受用户的程序代码，然后创建数据流，将数据流提交给 Job Manager 以便进一步执行。 执行完成后，Client 将结果返回给用户</p>
@@ -241,6 +242,26 @@ doris-flink-connector 版本：1.13.5-2.12-SNAPSHOT
 <p>taskmanager.memory.process.size=12g</p>
 </blockquote>
 <p><img src="https://gitee.com/lei9388/cloud-img/raw/master/image-20220310134632757.png" alt="image-20220310134632757"></p>
+<p><img src="https://gitee.com/lei9388/cloud-img/raw/master/image-20210406150827481.png" alt="image-20210406150827481"></p>
+<ul>
+<li><p><strong>Network Buffers:</strong> 一定数量的32KB大小的 buffer，主要用于数据的网络传输。在 TaskManager 启动的时候就会分配。默认数量是 2048 个，可以通过 <code>taskmanager.network.numberOfBuffers</code> 来配置。</p>
+</li>
+<li><p><strong>Memory Manager Pool:</strong> 这是一个由 <code>MemoryManager</code> 管理的，由众多<code>MemorySegment</code>组成的超大集合。Flink 中的算法（如 sort/shuffle/join）会向这个内存池申请 MemorySegment，将序列化后的数据存于其中，使用完后释放回内存池。默认情况下，池子占了堆内存的 70% 的大小。</p>
+</li>
+<li><p><strong>Remaining (Free) Heap:</strong> 这部分的内存是留给用户代码以及 TaskManager 的数据结构使用的。因为这些数据结构一般都很小，所以基本上这些内存都是给用户代码使用的。从GC的角度来看，可以把这里看成的新生代，也就是说这里主要都是由用户代码生成的短期对象。</p>
+<p><strong>注意：Memory Manager Pool  主要在Batch模式下使用。在Steaming模式下，该池子不会预分配内存，也不会向该池子请求内存块。也就是说该部分的内存都是可以给用户代码使用的。不过社区是打算在 Streaming 模式下也能将该池子利用起来。</strong></p>
+<p>从上面我们能够得出 Flink 积极的内存管理以及直接操作二进制数据有以下几点好处：</p>
+<ol>
+<li><strong>减少GC压力。</strong>显而易见，因为所有常驻型数据都以二进制的形式存在 Flink 的<code>MemoryManager</code>中，这些<code>MemorySegment</code>一直呆在老年代而不会被GC回收。其他的数据对象基本上是由用户代码生成的短生命周期对象，这部分对象可以被 Minor GC 快速回收。只要用户不去创建大量类似缓存的常驻型对象，那么老年代的大小是不会变的，Major  GC也就永远不会发生。从而有效地降低了垃圾回收的压力。另外，这里的内存块还可以是堆外内存，这可以使得 JVM 内存更小，从而加速垃圾回收。</li>
+<li><strong>避免了OOM。</strong>所有的运行时数据结构和算法只能通过内存池申请内存，保证了其使用的内存大小是固定的，不会因为运行时数据结构和算法而发生OOM。在内存吃紧的情况下，算法（sort/join等）会高效地将一大批内存块写到磁盘，之后再读回来。因此，<code>OutOfMemoryErrors</code>可以有效地被避免。</li>
+<li><strong>节省内存空间。</strong>Java 对象在存储上有很多额外的消耗。如果只存储实际数据的二进制内容，就可以避免这部分消耗。</li>
+<li><strong>高效的二进制操作 &amp; 缓存友好的计算。</strong>二进制数据以定义好的格式存储，可以高效地比较与操作。另外，该二进制形式可以把相关的值，以及hash值，键值和指针等相邻地放进内存中。这使得数据结构可以对高速缓存更友好，可以从 L1/L2/L3 缓存获得性能的提升。</li>
+</ol>
+</li>
+</ul>
+<h2 id="任务执行模型"><a href="#任务执行模型" class="headerlink" title="任务执行模型"></a>任务执行模型</h2><p>每个任务对应着一个OperatorChain，一般来说每个OperatorChain都有自己的输入和输出，输入是InputGate，输出是ResultPartiion,唯一例外的是Source，数据是从SourceFunction 产出。上游的ResultPartition和下游的OperatorChain会通过Flink的ShuffleService进行数据交换，目前默认的是NettyShuffleService。</p>
+<p><img src="https://gitee.com/lei9388/cloud-img/raw/master/image-20220314145936820.png" alt="image-20220314145936820"></p>
+<p>ResultPartition是由一个个subPartition组成，InputGate是由一个个InputChannel组成。</p>
 <h2 id="任务提交"><a href="#任务提交" class="headerlink" title="任务提交"></a>任务提交</h2><h3 id="作业执行模式"><a href="#作业执行模式" class="headerlink" title="作业执行模式"></a>作业执行模式</h3><h4 id="Per-Job"><a href="#Per-Job" class="headerlink" title="Per-Job"></a>Per-Job</h4><ul>
 <li>独享Dispatcher与Resource Manager，JM负载均衡，互不影响</li>
 <li>按需申请资源，即TaskExecutor</li>
@@ -257,6 +278,27 @@ doris-flink-connector 版本：1.13.5-2.12-SNAPSHOT
 </ul>
 <h3 id="命令行"><a href="#命令行" class="headerlink" title="命令行"></a>命令行</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> application模式</span></span><br><span class="line">flink run-application -t yarn-application -p 4 \</span><br><span class="line">-Djobmanager.memory.process.size=1024m \</span><br><span class="line">-Dtaskmanager.memory.process.size=1024m \</span><br><span class="line">-Dyarn.application.name=&quot;test&quot; \</span><br><span class="line">-Dyarn.provided.lib.dirs=&quot;hdfs://myCluster/test/jars \</span><br><span class="line">-Dtaskmanager.numberOfTaskSlots=4 \</span><br><span class="line">-c examples/streaming/TopSpeedWindowing \</span><br><span class="line">TopSpeedWindowing.jar</span><br></pre></td></tr></table></figure>
 
+<h3 id="任务调度"><a href="#任务调度" class="headerlink" title="任务调度"></a>任务调度</h3><p>任务调度时机是由调度策略（SchedulingStrategy）来控制的</p>
+<ul>
+<li>事件驱动<ul>
+<li>作业开始调度</li>
+<li>任务状态变化</li>
+<li>任务产出的数据可消费</li>
+<li>失败任务需要重启</li>
+</ul>
+</li>
+<li>任务调度策略<ul>
+<li><strong><del>Eager（1.11移除）</del></strong> 适用于流式任务,同时调度所有task</li>
+<li><strong><del>lazy from sources（1.11移除）</del></strong> 适用于批处理，当上游数据准备好后，开始vertices调度</li>
+<li><strong>Piplined region based（1.11加入）</strong>1.11起作为默认调度策略</li>
+</ul>
+</li>
+<li>任务失败策略<ul>
+<li><strong>RestartPipelinedRegion</strong> 重启失败任务所在的Region及任务下游所有Region</li>
+<li><strong>RestartAllFailoverStrategy</strong> 重启作业中所有任务，不经常用</li>
+</ul>
+</li>
+</ul>
 <h2 id="核心概念"><a href="#核心概念" class="headerlink" title="核心概念"></a>核心概念</h2><h3 id="Checkpoint"><a href="#Checkpoint" class="headerlink" title="Checkpoint"></a>Checkpoint</h3><h4 id="Savepoint-和-Checkpoint-对比"><a href="#Savepoint-和-Checkpoint-对比" class="headerlink" title="Savepoint 和 Checkpoint 对比"></a>Savepoint 和 Checkpoint 对比</h4><ul>
 <li>Checkpoint 是 自动容错机制 ，Savepoint 程序全局状态镜像 。</li>
 <li>Checkpoint 是程序自动容错，快速恢复 。Savepoint是 程序修改后继续从状态恢复，程序升级等。</li>
@@ -281,24 +323,15 @@ doris-flink-connector 版本：1.13.5-2.12-SNAPSHOT
 <li>在 open() 方法中为 State 赋值</li>
 <li>调用 State 的方法进行读写 （例如：state.value(),state.update()）</li>
 </ol>
-<h3 id="Time"><a href="#Time" class="headerlink" title="Time"></a>Time</h3><h3 id="Window"><a href="#Window" class="headerlink" title="Window"></a>Window</h3><h3 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h3><p><img src="https://gitee.com/lei9388/cloud-img/raw/master/image-20210406150827481.png" alt="image-20210406150827481"></p>
-<ul>
-<li><p><strong>Network Buffers:</strong> 一定数量的32KB大小的 buffer，主要用于数据的网络传输。在 TaskManager 启动的时候就会分配。默认数量是 2048 个，可以通过 <code>taskmanager.network.numberOfBuffers</code> 来配置。</p>
-</li>
-<li><p><strong>Memory Manager Pool:</strong> 这是一个由 <code>MemoryManager</code> 管理的，由众多<code>MemorySegment</code>组成的超大集合。Flink 中的算法（如 sort/shuffle/join）会向这个内存池申请 MemorySegment，将序列化后的数据存于其中，使用完后释放回内存池。默认情况下，池子占了堆内存的 70% 的大小。</p>
-</li>
-<li><p><strong>Remaining (Free) Heap:</strong> 这部分的内存是留给用户代码以及 TaskManager 的数据结构使用的。因为这些数据结构一般都很小，所以基本上这些内存都是给用户代码使用的。从GC的角度来看，可以把这里看成的新生代，也就是说这里主要都是由用户代码生成的短期对象。</p>
-<p><strong>注意：Memory Manager Pool  主要在Batch模式下使用。在Steaming模式下，该池子不会预分配内存，也不会向该池子请求内存块。也就是说该部分的内存都是可以给用户代码使用的。不过社区是打算在 Streaming 模式下也能将该池子利用起来。</strong></p>
-<p>从上面我们能够得出 Flink 积极的内存管理以及直接操作二进制数据有以下几点好处：</p>
-<ol>
-<li><strong>减少GC压力。</strong>显而易见，因为所有常驻型数据都以二进制的形式存在 Flink 的<code>MemoryManager</code>中，这些<code>MemorySegment</code>一直呆在老年代而不会被GC回收。其他的数据对象基本上是由用户代码生成的短生命周期对象，这部分对象可以被 Minor GC 快速回收。只要用户不去创建大量类似缓存的常驻型对象，那么老年代的大小是不会变的，Major  GC也就永远不会发生。从而有效地降低了垃圾回收的压力。另外，这里的内存块还可以是堆外内存，这可以使得 JVM 内存更小，从而加速垃圾回收。</li>
-<li><strong>避免了OOM。</strong>所有的运行时数据结构和算法只能通过内存池申请内存，保证了其使用的内存大小是固定的，不会因为运行时数据结构和算法而发生OOM。在内存吃紧的情况下，算法（sort/join等）会高效地将一大批内存块写到磁盘，之后再读回来。因此，<code>OutOfMemoryErrors</code>可以有效地被避免。</li>
-<li><strong>节省内存空间。</strong>Java 对象在存储上有很多额外的消耗。如果只存储实际数据的二进制内容，就可以避免这部分消耗。</li>
-<li><strong>高效的二进制操作 &amp; 缓存友好的计算。</strong>二进制数据以定义好的格式存储，可以高效地比较与操作。另外，该二进制形式可以把相关的值，以及hash值，键值和指针等相邻地放进内存中。这使得数据结构可以对高速缓存更友好，可以从 L1/L2/L3 缓存获得性能的提升。</li>
+<h4 id="分布式快照"><a href="#分布式快照" class="headerlink" title="分布式快照"></a>分布式快照</h4><ol>
+<li>全局Checkpoint Coordinator把checkpoint barrier注入到每个source（记录处理分区的offset），然后启动快照</li>
+<li>算子每个并发保存当前节点的本地状态至checkpoint</li>
+<li>每个算子的每个并发向Checkpoint Coordinator发送确认信息</li>
+<li>当所有的确认信息被Checkpoint Coordinator接受，快照结束</li>
 </ol>
-</li>
-</ul>
-<h3 id="反压"><a href="#反压" class="headerlink" title="反压"></a>反压</h3><p><img src="https://gitee.com/lei9388/cloud-img/raw/master/image-20210406141848956.png" alt="image-20210406141848956"></p>
+<p>当算子有多个输入，需要Barrier对齐。当一条barrier到达，另一条还在管道中，这时会在保证Excetly Once 的情况下，把先到的流阻塞掉，等到另一条流到达之后再unlock；如果不阻塞，一旦故障恢复后，source重放，部分数据会被重复处理，这就是as-last-once</p>
+<p><strong>Barrier对齐副作用：导致反压和operator暂停数据处理</strong></p>
+<h3 id="Time"><a href="#Time" class="headerlink" title="Time"></a>Time</h3><h3 id="Window"><a href="#Window" class="headerlink" title="Window"></a>Window</h3><h3 id="反压"><a href="#反压" class="headerlink" title="反压"></a>反压</h3><p><img src="https://gitee.com/lei9388/cloud-img/raw/master/image-20210406141848956.png" alt="image-20210406141848956"></p>
 <p>基于TCP的流控和反压方案有两大缺点：</p>
 <ul>
 <li>只要TaskManager执行的一个Task触发反压，该TaskManager与上游TaskManager的Socket就不能再传输数据，从而<strong>影响到所有其他正常的Task</strong>，以及Checkpoint Barrier的流动，可能造成作业雪崩；</li>
@@ -315,28 +348,6 @@ doris-flink-connector 版本：1.13.5-2.12-SNAPSHOT
       </categories>
       <tags>
         <tag>Flink</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>统计HDFS小文件</title>
-    <url>/posts/c11a5a42.html</url>
-    <content><![CDATA[<h2 id="导出FSimage"><a href="#导出FSimage" class="headerlink" title="导出FSimage"></a>导出FSimage</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[root@worker03 PGDataShop]$ mkdir metta</span><br><span class="line"></span><br><span class="line">[root@worker03 PGDataShop]$ hdfs dfsadmin -fetchImage metta/</span><br><span class="line"></span><br><span class="line">[root@worker03 metta]$ ll</span><br><span class="line">total 960808</span><br><span class="line">-rw-rw-r-- 1 root root 983861710 May 20 16:24 fsimage_0000000000616506859</span><br></pre></td></tr></table></figure>
-
-<span id="more"></span>
-
-<h2 id="将文件转换为csv"><a href="#将文件转换为csv" class="headerlink" title="将文件转换为csv"></a>将文件转换为csv</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[root@worker03 metta]$ hdfs oiv -i fsimage_0000000000616506859  -o fsimage.csv -p Delimited</span><br><span class="line">SLF4J: Class path contains multiple SLF4J bindings.</span><br><span class="line">SLF4J: Found binding in [jar:file:/opt/cloudera/parcels/CDH-6.3.2-1.cdh6.3.2.p0.1605554/jars/slf4j-log4j12-1.7.25.jar!/org/slf4j/impl/StaticLoggerBinder.class]</span><br><span class="line">SLF4J: Found binding in [jar:file:/opt/cloudera/parcels/CDH-6.3.2-1.cdh6.3.2.p0.1605554/jars/avro-tools-1.8.2-cdh6.3.2.jar!/org/slf4j/impl/StaticLoggerBinder.clas                                          s]</span><br><span class="line">SLF4J: Found binding in [jar:file:/opt/cloudera/parcels/CDH-6.3.2-1.cdh6.3.2.p0.1605554/jars/hive-jdbc-2.1.1-cdh6.3.2-standalone.jar!/org/slf4j/impl/StaticLoggerB                                          inder.class]</span><br><span class="line">SLF4J: Found binding in [jar:file:/opt/cloudera/parcels/CDH-6.3.2-1.cdh6.3.2.p0.1605554/jars/log4j-slf4j-impl-2.8.2.jar!/org/slf4j/impl/StaticLoggerBinder.class]</span><br><span class="line">SLF4J: Found binding in [jar:file:/opt/cloudera/parcels/CDH-6.3.2-1.cdh6.3.2.p0.1605554/jars/parquet-tools-1.9.0-cdh6.3.2.jar!/org/slf4j/impl/StaticLoggerBinder.c                                          lass]</span><br><span class="line">SLF4J: Found binding in [jar:file:/opt/cloudera/parcels/CDH-6.3.2-1.cdh6.3.2.p0.1605554/jars/slf4j-simple-1.7.25.jar!/org/slf4j/impl/StaticLoggerBinder.class]</span><br><span class="line">SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.</span><br><span class="line">SLF4J: Actual binding is of type [org.slf4j.impl.Log4jLoggerFactory]</span><br><span class="line">21/05/20 16:25:32 INFO offlineImageViewer.PBImageTextWriter: Loading string table</span><br><span class="line">21/05/20 16:25:32 INFO offlineImageViewer.FSImageHandler: Loading 55 strings</span><br><span class="line">21/05/20 16:25:32 INFO offlineImageViewer.PBImageTextWriter: Loading inode references</span><br><span class="line">21/05/20 16:25:32 INFO offlineImageViewer.FSImageHandler: Loading inode references</span><br><span class="line">21/05/20 16:25:32 INFO offlineImageViewer.FSImageHandler: Loaded 0 inode references</span><br><span class="line">21/05/20 16:25:32 INFO offlineImageViewer.PBImageTextWriter: Loading directories</span><br><span class="line">21/05/20 16:25:32 INFO offlineImageViewer.PBImageTextWriter: Loading directories in INode section.</span><br><span class="line">21/05/20 16:25:54 INFO offlineImageViewer.PBImageTextWriter: Found 251012 directories in INode section.</span><br><span class="line">21/05/20 16:25:54 INFO offlineImageViewer.PBImageTextWriter: Finished loading directories in 21593ms</span><br><span class="line">21/05/20 16:25:54 INFO offlineImageViewer.PBImageTextWriter: Loading INode directory section.</span><br><span class="line">21/05/20 16:25:57 INFO offlineImageViewer.PBImageTextWriter: Scanned 241365 INode directories to build namespace.</span><br><span class="line">21/05/20 16:25:57 INFO offlineImageViewer.PBImageTextWriter: Finished loading INode directory section in 3721ms</span><br><span class="line">21/05/20 16:25:57 INFO offlineImageViewer.PBImageTextWriter: Found 8217157 INodes in the INode section</span><br><span class="line">21/05/20 16:28:35 INFO offlineImageViewer.PBImageTextWriter: Outputted 8217157 INodes.</span><br></pre></td></tr></table></figure>
-
-<h2 id="将文件映射为Hive表"><a href="#将文件映射为Hive表" class="headerlink" title="将文件映射为Hive表"></a>将文件映射为Hive表</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[root@worker03 metta]$ hdfs dfs -copyFromLocal fsimage.csv /tmp/fsimage.csv</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">## 创建meta表</span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">EXTERNAL</span> <span class="keyword">TABLE</span> test.HDFS_META (</span><br><span class="line">	path STRING,</span><br><span class="line">	repl <span class="type">INT</span>,</span><br><span class="line">	ModificationTime STRING,</span><br><span class="line">	AccessTime STRING,</span><br><span class="line">	PreferredBlockSize <span class="type">INT</span>,</span><br><span class="line">	BlocksCount <span class="type">INT</span>,</span><br><span class="line">	FileSize <span class="type">INT</span>,</span><br><span class="line">	NSQUOTA <span class="type">INT</span>,</span><br><span class="line">	DSQUOTA <span class="type">INT</span>,</span><br><span class="line">	Permission STRING,</span><br><span class="line">	UserName STRING,</span><br><span class="line">	GroupName STRING </span><br><span class="line">) <span class="type">ROW</span> FORMAT DELIMITED FIELDS TERMINATED <span class="keyword">BY</span> <span class="string">&#x27;\t&#x27;</span> tblproperties (</span><br><span class="line">&quot;skip.header.line.count&quot; <span class="operator">=</span> &quot;1&quot;)</span><br><span class="line"></span><br><span class="line">## 加载数据</span><br><span class="line">load data inpath <span class="string">&#x27;/tmp/fsimage.csv&#x27;</span> overwrite <span class="keyword">into</span> <span class="keyword">table</span> test.hdfs_meta;</span><br><span class="line"></span><br><span class="line">## 统计<span class="keyword">sql</span></span><br><span class="line"><span class="keyword">SELECT</span></span><br><span class="line">	strleft ( path, instr( path, <span class="string">&#x27;/&#x27;</span>, <span class="number">1</span>, <span class="number">5</span> )<span class="operator">-</span> <span class="number">1</span> ) basepath,</span><br><span class="line">	<span class="built_in">sum</span>( blockscount ) blockscount,</span><br><span class="line">	<span class="built_in">sum</span>( filesize ) filesizes,</span><br><span class="line">	<span class="built_in">count</span>(<span class="operator">*</span>) file_nums </span><br><span class="line"><span class="keyword">FROM</span></span><br><span class="line">	hdfs_meta </span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span></span><br><span class="line">	basepath </span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span></span><br><span class="line">	blockscount <span class="keyword">DESC</span></span><br></pre></td></tr></table></figure>
-
-<p><img src="https://gitee.com/lei9388/cloud-img/raw/master/image-20220221181233652.png" alt="image-20220221181233652"></p>
-]]></content>
-      <categories>
-        <category>大数据组件</category>
-      </categories>
-      <tags>
-        <tag>HDFS</tag>
       </tags>
   </entry>
 </search>
