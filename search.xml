@@ -329,7 +329,7 @@ doris-flink-connector 版本：1.13.5-2.12-SNAPSHOT
 <li>每个算子的每个并发向Checkpoint Coordinator发送确认信息</li>
 <li>当所有的确认信息被Checkpoint Coordinator接受，快照结束</li>
 </ol>
-<p>当算子有多个输入，需要Barrier对齐。当一条barrier到达，另一条还在管道中，这时会在保证Excetly Once 的情况下，把先到的流阻塞掉，等到另一条流到达之后再unlock；如果不阻塞，一旦故障恢复后，source重放，部分数据会被重复处理，这就是as-last-once</p>
+<p>当算子有多个输入，需要Barrier对齐。当一条barrier到达，另一条还在管道中，这时会在保证Excetly Once 的情况下，把先到的流阻塞掉，等到另一条流到达之后再unlock；如果不阻塞，一旦故障恢复后，source重放，部分数据会被重复处理，这就是at-last-once</p>
 <p><strong>Barrier对齐副作用：导致反压和operator暂停数据处理</strong></p>
 <h3 id="Time"><a href="#Time" class="headerlink" title="Time"></a>Time</h3><h3 id="Window"><a href="#Window" class="headerlink" title="Window"></a>Window</h3><h3 id="反压"><a href="#反压" class="headerlink" title="反压"></a>反压</h3><p><img src="https://gitee.com/lei9388/cloud-img/raw/master/image-20210406141848956.png" alt="image-20210406141848956"></p>
 <p>基于TCP的流控和反压方案有两大缺点：</p>
