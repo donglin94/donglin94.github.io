@@ -313,7 +313,7 @@ doris-flink-connector 版本：1.13.5-2.12-SNAPSHOT
 </blockquote>
 <p>​    sparkStreaming：把状态数据进入算子之前就给提取出来，然后把这个状态数据和输入数 据合并在一起，再把它们同时输入到算子中，得到一个输出，好处是是可以重用已有的无状态算子</p>
 <p>​    flink：是算子本身是有状态的，算子在每一次到新数据之后做计算的时候，同时考虑新输数据和已有的状态对计算过程的影响，最终把结果输出出去</p>
-<h4 id="KeyedState-使用方法"><a href="#KeyedState-使用方法" class="headerlink" title="KeyedState 使用方法"></a>KeyedState 使用方法</h4><ol>
+<h4 id="KeyedState-使用"><a href="#KeyedState-使用" class="headerlink" title="KeyedState 使用"></a>KeyedState 使用</h4><ol>
 <li>只能用于 RichFunction</li>
 <li>将 State 声明为实例变量<ul>
 <li>创建一个 StateDescriptor</li>
