@@ -97,8 +97,8 @@ doris-flink-connector 版本：1.13.5-2.12-SNAPSHOT
 <li><p><strong>Doris连接出现权限问题，无法插入数据</strong></p>
 <p>DorisSink连接用户至少需要 show backends 权限，随机选择BE</p>
 </li>
-<li><p><strong>导入数据报错“ The connection property ‘zeroDateTimeBehavior’ only accepts values of the form: ‘exception’, ‘round’ or ‘convertToNull’. The value ‘CONVERT_TO_NULL’ is not in this set”</strong></p>
-<p>修改源码com.ververica.cdc.connectors.mysql.source.connection.PooledDataSourceFactory.java 中CONVERT_TO_NULL 改为 convertToNull</p>
+<li><p><strong>导入数据报错“The connection property ‘zeroDateTimeBehavior’ only accepts values of the form:‘exception’,‘round’ or ‘convertToNull’.The value ‘CONVERT_TO_NULL’ is not in this set”</strong></p>
+<p>修改源码com.ververica.cdc.connectors.mysql.source.connection.PooledDataSourceFactory.java 中 CONVERT_TO_NULL 改为 convertToNull</p>
 </li>
 <li><p><strong>Source Coordinator Thread already exists. There should never be more than one thread driving the actions of a Source Coordinator</strong></p>
 <p>原因是jm的java.lang.OutOfMemoryError: Java heap space。即使在全量阶段加大资源，进入增量后如果缩小jm资源，问题还是存在。参考 <a href="https://issues.apache.org/jira/browse/FLINK-24855">jira issue</a></p>
@@ -133,7 +133,7 @@ doris-flink-connector 版本：1.13.5-2.12-SNAPSHOT
 
 <figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">## 创建meta表</span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">EXTERNAL</span> <span class="keyword">TABLE</span> test.HDFS_META (</span><br><span class="line">	path STRING,</span><br><span class="line">	repl <span class="type">INT</span>,</span><br><span class="line">	ModificationTime STRING,</span><br><span class="line">	AccessTime STRING,</span><br><span class="line">	PreferredBlockSize <span class="type">INT</span>,</span><br><span class="line">	BlocksCount <span class="type">INT</span>,</span><br><span class="line">	FileSize <span class="type">INT</span>,</span><br><span class="line">	NSQUOTA <span class="type">INT</span>,</span><br><span class="line">	DSQUOTA <span class="type">INT</span>,</span><br><span class="line">	Permission STRING,</span><br><span class="line">	UserName STRING,</span><br><span class="line">	GroupName STRING </span><br><span class="line">) <span class="type">ROW</span> FORMAT DELIMITED FIELDS TERMINATED <span class="keyword">BY</span> <span class="string">&#x27;\t&#x27;</span> tblproperties (</span><br><span class="line">&quot;skip.header.line.count&quot; <span class="operator">=</span> &quot;1&quot;)</span><br><span class="line"></span><br><span class="line">## 加载数据</span><br><span class="line">load data inpath <span class="string">&#x27;/tmp/fsimage.csv&#x27;</span> overwrite <span class="keyword">into</span> <span class="keyword">table</span> test.hdfs_meta;</span><br><span class="line"></span><br><span class="line">## 统计<span class="keyword">sql</span></span><br><span class="line"><span class="keyword">SELECT</span></span><br><span class="line">	strleft ( path, instr( path, <span class="string">&#x27;/&#x27;</span>, <span class="number">1</span>, <span class="number">5</span> )<span class="operator">-</span> <span class="number">1</span> ) basepath,</span><br><span class="line">	<span class="built_in">sum</span>( blockscount ) blockscount,</span><br><span class="line">	<span class="built_in">sum</span>( filesize ) filesizes,</span><br><span class="line">	<span class="built_in">count</span>(<span class="operator">*</span>) file_nums </span><br><span class="line"><span class="keyword">FROM</span></span><br><span class="line">	hdfs_meta </span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span></span><br><span class="line">	basepath </span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span></span><br><span class="line">	blockscount <span class="keyword">DESC</span></span><br></pre></td></tr></table></figure>
 
-<p><img src="../images/image-20210708172959118.png" alt="image-20220221181233652"></p>
+<p><img data-src="../images/image-20210708172959118.png" alt="image-20220221181233652"></p>
 ]]></content>
       <categories>
         <category>大数据组件</category>
@@ -146,7 +146,7 @@ doris-flink-connector 版本：1.13.5-2.12-SNAPSHOT
     <title>Flink 基础</title>
     <url>/posts/94337cde.html</url>
     <content><![CDATA[<h2 id="集群架构"><a href="#集群架构" class="headerlink" title="集群架构"></a>集群架构</h2><p>Flink 运行时由两种类型的进程组成：一个 <em>JobManager</em> 和一个或者多个 <em>TaskManager</em>。<span id="more"></span></p>
-<p><img src="../images/image-20220330165020568.png" alt="image-20220330165020568"></p>
+<p><img data-src="../images/image-20220330165020568.png" alt="image-20220330165020568"></p>
 <h3 id="JobManager"><a href="#JobManager" class="headerlink" title="JobManager"></a>JobManager</h3><p>决定何时调度下一个 task（或一组 task）、对完成的 task 或执行失败做出反应、协调 checkpoint、并且协调从失败中恢复等等</p>
 <ul>
 <li>RegisterTaskManager: 它由想要注册到JobManager的TaskManager发送。注册成功会通过AcknowledgeRegistration消息进行Ack。</li>
@@ -158,7 +158,7 @@ doris-flink-connector 版本：1.13.5-2.12-SNAPSHOT
 </ul>
 <h3 id="TaskManagers"><a href="#TaskManagers" class="headerlink" title="TaskManagers"></a>TaskManagers</h3><p><em>TaskManager</em>（也称为 <em>worker</em>）执行作业流的 task，并且缓存和交换数据流，任务执行的并行性由每个 Task Manager 上可用的Task Slot决定</p>
 <h3 id="Client"><a href="#Client" class="headerlink" title="Client"></a>Client</h3><p>负责接受用户的程序代码，然后创建数据流，将数据流提交给 Job Manager 以便进一步执行。 执行完成后，Client 将结果返回给用户</p>
-<h3 id="Graph"><a href="#Graph" class="headerlink" title="Graph"></a>Graph</h3><p><img src="../images/image-20210407143331513.png" alt="img"></p>
+<h3 id="Graph"><a href="#Graph" class="headerlink" title="Graph"></a>Graph</h3><p><img data-src="../images/image-20210407143331513.png" alt="img"></p>
 <ul>
 <li><p><strong>StreamGraph：</strong>是根据用户通过 Stream API 编写的代码生成的最初的图。用来表示程序的拓扑结构。</p>
 </li>
@@ -167,7 +167,7 @@ doris-flink-connector 版本：1.13.5-2.12-SNAPSHOT
 <li><p><strong>ExecutionGraph：</strong>JobManager 根据 JobGraph 生成ExecutionGraph。ExecutionGraph是JobGraph的并行化版本，是调度层最核心的数据结构。</p>
 </li>
 <li><p><strong>物理执行图：</strong>JobManager 根据 ExecutionGraph 对 Job 进行调度后，在各个TaskManager 上部署 Task 后形成的“图”，并不是一个具体的数据结构。</p>
-<p><img src="../images/TB1tA_GJFXXXXapXFXXXXXXXXXX.png" alt="img"></p>
+<p><img data-src="../images/TB1tA_GJFXXXXapXFXXXXXXXXXX.png" alt="img"></p>
 <ul>
 <li><p>StreamGraph：</p>
 <p>根据用户通过 Stream API 编写的代码生成的最初的图。 </p>
@@ -208,7 +208,7 @@ doris-flink-connector 版本：1.13.5-2.12-SNAPSHOT
 </ul>
 </li>
 </ul>
-<p><img src="../images/image-20210220143223415.png" alt="img"></p>
+<p><img data-src="../images/image-20210220143223415.png" alt="img"></p>
 <h3 id="Source"><a href="#Source" class="headerlink" title="Source"></a>Source</h3><p>Source: 数据源，Flink 在流处理和批处理上的 source 大概有 4 类：基于本地集合的 source、基于文件的  source、基于网络套接字的 source、自定义的 source。自定义的 source 常见的有 Apache kafka、Amazon  Kinesis Streams、RabbitMQ、Twitter Streaming API、Apache NiFi 等，当然你也可以定义自己的 source</p>
 <h3 id="Transformation"><a href="#Transformation" class="headerlink" title="Transformation"></a>Transformation</h3><ol>
 <li><p>map: 输入一个元素，返回一个元素，中间可以进行清洗转换等操作。</p>
@@ -241,8 +241,8 @@ doris-flink-connector 版本：1.13.5-2.12-SNAPSHOT
 <p>jobmanager.memory.process.size=4g </p>
 <p>taskmanager.memory.process.size=12g</p>
 </blockquote>
-<p><img src="../images/image-20220310134632757.png" alt="img"></p>
-<p><img src="../images/image-20210406150827481.png" alt="img"></p>
+<p><img data-src="../images/image-20220310134632757.png" alt="img"></p>
+<p><img data-src="../images/image-20210406150827481.png" alt="img"></p>
 <ul>
 <li><p><strong>Network Buffers:</strong> 一定数量的32KB大小的 buffer，主要用于数据的网络传输。在 TaskManager 启动的时候就会分配。默认数量是 2048 个，可以通过 <code>taskmanager.network.numberOfBuffers</code> 来配置。</p>
 </li>
@@ -260,7 +260,7 @@ doris-flink-connector 版本：1.13.5-2.12-SNAPSHOT
 </li>
 </ul>
 <h2 id="任务执行模型"><a href="#任务执行模型" class="headerlink" title="任务执行模型"></a>任务执行模型</h2><p>每个任务对应着一个OperatorChain，一般来说每个OperatorChain都有自己的输入和输出，输入是InputGate，输出是ResultPartiion,唯一例外的是Source，数据是从SourceFunction 产出。上游的ResultPartition和下游的OperatorChain会通过Flink的ShuffleService进行数据交换，目前默认的是NettyShuffleService。</p>
-<p><img src="../images/image-20220314145936820.png" alt="img"></p>
+<p><img data-src="../images/image-20220314145936820.png" alt="img"></p>
 <p>ResultPartition是由一个个subPartition组成，InputGate是由一个个InputChannel组成。</p>
 <h2 id="任务提交"><a href="#任务提交" class="headerlink" title="任务提交"></a>任务提交</h2><h3 id="作业执行模式"><a href="#作业执行模式" class="headerlink" title="作业执行模式"></a>作业执行模式</h3><h4 id="Per-Job"><a href="#Per-Job" class="headerlink" title="Per-Job"></a>Per-Job</h4><ul>
 <li>独享Dispatcher与Resource Manager，JM负载均衡，互不影响</li>
@@ -331,7 +331,7 @@ doris-flink-connector 版本：1.13.5-2.12-SNAPSHOT
 </ol>
 <p>当算子有多个输入，需要Barrier对齐。当一条barrier到达，另一条还在管道中，这时会在保证Excetly Once 的情况下，把先到的流阻塞掉，等到另一条流到达之后再unlock；如果不阻塞，一旦故障恢复后，source重放，部分数据会被重复处理，这就是at-last-once</p>
 <p><strong>Barrier对齐副作用：导致反压和operator暂停数据处理</strong></p>
-<h3 id="Time"><a href="#Time" class="headerlink" title="Time"></a>Time</h3><h3 id="Window"><a href="#Window" class="headerlink" title="Window"></a>Window</h3><h3 id="反压"><a href="#反压" class="headerlink" title="反压"></a>反压</h3><p><img src="../images/image-20210406141848956.png" alt="img"></p>
+<h3 id="Time"><a href="#Time" class="headerlink" title="Time"></a>Time</h3><h3 id="Window"><a href="#Window" class="headerlink" title="Window"></a>Window</h3><h3 id="反压"><a href="#反压" class="headerlink" title="反压"></a>反压</h3><p><img data-src="../images/image-20210406141848956.png" alt="img"></p>
 <p>基于TCP的流控和反压方案有两大缺点：</p>
 <ul>
 <li>只要TaskManager执行的一个Task触发反压，该TaskManager与上游TaskManager的Socket就不能再传输数据，从而<strong>影响到所有其他正常的Task</strong>，以及Checkpoint Barrier的流动，可能造成作业雪崩；</li>
