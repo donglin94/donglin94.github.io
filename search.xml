@@ -331,17 +331,29 @@ doris-flink-connector 版本：1.13.5-2.12-SNAPSHOT
 </ol>
 <p>当算子有多个输入，需要Barrier对齐。当一条barrier到达，另一条还在管道中，这时会在保证Excetly Once 的情况下，把先到的流阻塞掉，等到另一条流到达之后再unlock；如果不阻塞，一旦故障恢复后，source重放，部分数据会被重复处理，这就是at-last-once</p>
 <p><strong>Barrier对齐副作用：导致反压和operator暂停数据处理</strong></p>
-<h3 id="Time"><a href="#Time" class="headerlink" title="Time"></a>Time</h3><h3 id="Window"><a href="#Window" class="headerlink" title="Window"></a>Window</h3><h3 id="反压"><a href="#反压" class="headerlink" title="反压"></a>反压</h3><p><img src="../images/image-20210406141848956.png" alt="img"></p>
+<h3 id="Time"><a href="#Time" class="headerlink" title="Time"></a>Time</h3><h3 id="Window"><a href="#Window" class="headerlink" title="Window"></a>Window</h3><h3 id="网络流控"><a href="#网络流控" class="headerlink" title="网络流控"></a>网络流控</h3><ol>
+<li>网络流控是为了在上下游速度不匹配的情况下，防止下游出现过载</li>
+<li>网络流控有静态限速和动态反压两种手段</li>
+<li>Flink 1.5 之前是基于 TCP 流控 + bounded buffer实现的</li>
+<li>Flink 1.5 之后实现了自己托管的 credit-base 流控机制，在应用层模拟 TCP 的流控机制</li>
+</ol>
+<p><img src="../images/image-20220526093627788.png" alt="image-20220526093627788"></p>
 <p>基于TCP的流控和反压方案有两大缺点：</p>
 <ul>
 <li>只要TaskManager执行的一个Task触发反压，该TaskManager与上游TaskManager的Socket就不能再传输数据，从而<strong>影响到所有其他正常的Task</strong>，以及Checkpoint Barrier的流动，可能造成作业雪崩；</li>
 <li>反压的<strong>传播链路太长</strong>，且需要耗尽所有网络缓存之后才能有效触发，<strong>延迟比较大</strong>。</li>
 </ul>
-<p>Flink 1.5+版本为了解决这两个问题，引入了基于Credit的流控和反压机制。它本质上是将TCP的流控机制从传输层提升到了应用层——即ResultPartition和InputGate的层级，从而避免在传输层造成阻塞。具体来讲：</p>
+<p><img src="../images/image-20210406141848956.png" alt="img"></p>
+<p>**Flink 1.5+**版本为了解决这两个问题，引入了基于Credit的流控和反压机制。它本质上是将TCP的流控机制从传输层提升到了应用层——即ResultPartition和InputGate的层级，从而避免在传输层造成阻塞。具体来讲：</p>
 <ul>
 <li>Sender端的ResultSubPartition会统计累积的消息量（以缓存个数计），以backlog size的形式通知到Receiver端的InputChannel；</li>
 <li>Receiver端InputChannel会计算有多少空间能够接收消息（同样以缓存个数计），以credit的形式通知到Sender端的ResultSubPartition。</li>
 </ul>
+<p>参考</p>
+<blockquote>
+<p><a href="https://zhuanlan.zhihu.com/p/90116914">咱们从头到尾讲一次 Flink 网络流控和反压剖析 - 知乎 (zhihu.com)</a></p>
+<p><a href="https://www.jianshu.com/p/f7d68d8f25c6">Flink Spark Strom 反压机制 对比</a></p>
+</blockquote>
 ]]></content>
       <categories>
         <category>大数据组件</category>
