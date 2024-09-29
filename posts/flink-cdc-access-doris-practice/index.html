@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="canonical" href="https://donglin94.github.io/posts/flink-cdc-access-doris-practice/">
+    <meta name="generator" content="Astro v2.0.8">
+
+    <!-- General Meta Tags -->
+    <title>Flink CDC 接入 Doris 实践</title>
+    <meta name="title" content="Flink CDC 接入 Doris 实践">
+    <meta name="description" content="使用 Flink CDC 实时接入 RDS 数据入 Doris集群">
+    <meta name="author" content="东临">
+    <link rel="sitemap" href="/sitemap-index.xml">
+    <link rel="alternate" type="application/rss+xml" href="http://donglin94.github.io/rss.xml">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:title" content="Flink CDC 接入 Doris 实践">
+    <meta property="og:description" content="使用 Flink CDC 实时接入 RDS 数据入 Doris集群">
+    <meta property="og:url" content="https://donglin94.github.io/posts/flink-cdc-access-doris-practice/">
+    <meta property="og:image" content="https://donglin94.github.io/Flink%20CDC%20%E6%8E%A5%E5%85%A5%20Doris%20%E5%AE%9E%E8%B7%B5.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://donglin94.github.io/posts/flink-cdc-access-doris-practice/">
+    <meta property="twitter:title" content="Flink CDC 接入 Doris 实践">
+    <meta property="twitter:description" content="使用 Flink CDC 实时接入 RDS 数据入 Doris集群">
+    <meta property="twitter:image" content="https://donglin94.github.io/Flink%20CDC%20%E6%8E%A5%E5%85%A5%20Doris%20%E5%AE%9E%E8%B7%B5.png">
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link rel="stylesheet" href="https://npm.elemecdn.com/lxgw-wenkai-screen-webfont/lxgwwenkaiscreen.css" media="print" onload="this.media='all'">
+
+    <meta name="google-site-verification" content="bV_lNTeBfe0KSyR3BBugQCCuntWq18t7FioMb6DyMpU">
+
+    <script defer src="https://umami-psi-blush.vercel.app/script.js" data-website-id="babecfec-e561-45ad-8d6a-303698b46449"></script>
+
+    <script src="/toggle-theme.js"></script>
+  <link rel="stylesheet" href="/_astro/404.dfc86677.css" />
+<link rel="stylesheet" href="/_astro/about.fcb86bbc.css" />
+<link rel="stylesheet" href="/_astro/about.efa97651.css" />
+<link rel="stylesheet" href="/_astro/_slug_.fb16cf70.css" />
+<link rel="stylesheet" href="/_astro/_slug_.bc730ff5.css" />
+<link rel="stylesheet" href="/_astro/_slug_.5c31dbb2.css" />
+<link rel="stylesheet" href="/_astro/_slug_.d833ca2a.css" /><script type="module">const e=document.querySelector(".hamburger-menu"),n=document.querySelector("#menu-items")?.classList,t=document.querySelector(".icon-container")?.classList,o=document.querySelector("#first-line")?.classList,a=document.querySelector("#second-line ")?.classList,s=document.querySelector("#third-line")?.classList;e?.addEventListener("click",function(){e?.getAttribute("aria-expanded")==="false"?(e?.setAttribute("aria-expanded","true"),e?.setAttribute("aria-label","Close Menu"),n?.remove("display-none"),t?.remove("flex"),t?.add("relative"),o?.add("rotate-45","absolute","bottom-1/2"),s?.add("display-none"),a?.add("!w-full","-rotate-45","absolute","bottom-1/2")):(e?.setAttribute("aria-expanded","false"),e?.setAttribute("aria-label","Open Menu"),n?.add("display-none"),t?.add("flex"),t?.remove("relative"),o?.remove("rotate-45","absolute","bottom-1/2"),s?.remove("display-none"),a?.remove("!w-full","-rotate-45","absolute","bottom-1/2"))});
+</script></head>
+  <body>
+    <header class="astro-3EF6KSR2">
+  <a id="skip-to-content" href="#main-content" class="astro-3EF6KSR2">Skip to content</a>
+  <div class="nav-container astro-3EF6KSR2">
+    <div class="top-nav-wrap astro-3EF6KSR2">
+      <a href="/" class="logo whitespace-nowrap astro-3EF6KSR2">
+        DongLin&#39;s Blog
+      </a>
+      <nav id="nav-menu" class="astro-3EF6KSR2">
+        <button class="hamburger-menu focus-outline astro-3EF6KSR2" aria-label="Open Menu" aria-expanded="false" aria-controls="menu-items">
+          <div class="icon-container flex astro-3EF6KSR2">
+            <div id="first-line" class="astro-3EF6KSR2"></div>
+            <div id="second-line" class="astro-3EF6KSR2"></div>
+            <div id="third-line" class="astro-3EF6KSR2"></div>
+          </div>
+        </button>
+        <ul id="menu-items" class="display-none sm:flex astro-3EF6KSR2">
+          <li class="astro-3EF6KSR2">
+            <a href="/posts/" class=" astro-3EF6KSR2">
+              Posts
+            </a>
+          </li>
+          <li class="astro-3EF6KSR2">
+            <a href="/about/" class=" astro-3EF6KSR2">
+              About
+            </a>
+          </li>
+          <li class="astro-3EF6KSR2">
+            <a type="button" href="/search/" tabindex="0" class="group focus-outline p-3 sm:p-1  astro-3EF6KSR2 astro-5EUNQZKT" aria-label="search" title="Search">
+  <svg xmlns="http://www.w3.org/2000/svg" class="scale-125 sm:scale-100 astro-3EF6KSR2"><path d="M19.023 16.977a35.13 35.13 0 0 1-1.367-1.384c-.372-.378-.596-.653-.596-.653l-2.8-1.337A6.962 6.962 0 0 0 16 9c0-3.859-3.14-7-7-7S2 5.141 2 9s3.14 7 7 7c1.763 0 3.37-.66 4.603-1.739l1.337 2.8s.275.224.653.596c.387.363.896.854 1.384 1.367l1.358 1.392.604.646 2.121-2.121-.646-.604c-.379-.372-.885-.866-1.391-1.36zM9 14c-2.757 0-5-2.243-5-5s2.243-5 5-5 5 2.243 5 5-2.243 5-5 5z" class="astro-3EF6KSR2"></path>
+              </svg>
+</a>
+          </li>
+          <li class="astro-3EF6KSR2">
+            <button id="theme-btn" class="focus-outline astro-3EF6KSR2" title="Toggles light & dark" aria-label="auto" aria-live="polite">
+                  <svg xmlns="http://www.w3.org/2000/svg" id="moon-svg" class="astro-3EF6KSR2">
+                    <path d="M20.742 13.045a8.088 8.088 0 0 1-2.077.271c-2.135 0-4.14-.83-5.646-2.336a8.025 8.025 0 0 1-2.064-7.723A1 1 0 0 0 9.73 2.034a10.014 10.014 0 0 0-4.489 2.582c-3.898 3.898-3.898 10.243 0 14.143a9.937 9.937 0 0 0 7.072 2.93 9.93 9.93 0 0 0 7.07-2.929 10.007 10.007 0 0 0 2.583-4.491 1.001 1.001 0 0 0-1.224-1.224zm-2.772 4.301a7.947 7.947 0 0 1-5.656 2.343 7.953 7.953 0 0 1-5.658-2.344c-3.118-3.119-3.118-8.195 0-11.314a7.923 7.923 0 0 1 2.06-1.483 10.027 10.027 0 0 0 2.89 7.848 9.972 9.972 0 0 0 7.848 2.891 8.036 8.036 0 0 1-1.484 2.059z" class="astro-3EF6KSR2"></path>
+                  </svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" id="sun-svg" class="astro-3EF6KSR2">
+                    <path d="M6.993 12c0 2.761 2.246 5.007 5.007 5.007s5.007-2.246 5.007-5.007S14.761 6.993 12 6.993 6.993 9.239 6.993 12zM12 8.993c1.658 0 3.007 1.349 3.007 3.007S13.658 15.007 12 15.007 8.993 13.658 8.993 12 10.342 8.993 12 8.993zM10.998 19h2v3h-2zm0-17h2v3h-2zm-9 9h3v2h-3zm17 0h3v2h-3zM4.219 18.363l2.12-2.122 1.415 1.414-2.12 2.122zM16.24 6.344l2.122-2.122 1.414 1.414-2.122 2.122zM6.342 7.759 4.22 5.637l1.415-1.414 2.12 2.122zm13.434 10.605-1.414 1.414-2.122-2.122 1.414-1.414z" class="astro-3EF6KSR2"></path>
+                  </svg>
+                </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+  <div class="max-w-4xl mx-auto px-4">
+  <hr class="border-skin-line" aria-hidden="true">
+</div>
+</header><div class="mx-auto flex w-full max-w-4xl justify-start px-2 astro-VJ4TPSPI">
+    <button class="focus-outline mb-2 mt-8 flex hover:opacity-75 astro-VJ4TPSPI" onclick="(() => (history.length === 1) ? window.location = '/' : history.back())()">
+    </button>
+  </div><main id="main-content" class="astro-VJ4TPSPI">
+    <h1 class="post-title astro-VJ4TPSPI">Flink CDC 接入 Doris 实践</h1>
+    <div class="flex items-center space-x-2 opacity-80 my-2 astro-VJ4TPSPI"><svg xmlns="http://www.w3.org/2000/svg" class="scale-90 inline-block h-6 w-6 fill-skin-base" aria-hidden="true"><path d="M7 11h2v2H7zm0 4h2v2H7zm4-4h2v2h-2zm0 4h2v2h-2zm4-4h2v2h-2zm0 4h2v2h-2z"></path><path d="M5 22h14c1.103 0 2-.897 2-2V6c0-1.103-.897-2-2-2h-2V2h-2v2H9V2H7v2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2zM19 8l.001 12H5V8h14z"></path></svg><span>Posted on:</span><span class="text-sm">2022年3月2日</span></div>
+    <article id="article" role="article" class="prose mx-auto mt-8 max-w-5xl astro-VJ4TPSPI">
+      <h2 id="运行环境">运行环境</h2>
+<p>Flink version：1.13.3<br>
+Flink CDC version：2.2.0<br>
+Doris version：PALO-0.15.1-rc09<br>
+doris-flink-connector version：1.13.5-2.12-SNAPSHOT</p>
+<h2 id="同步方案">同步方案</h2>
+<ul>
+<li>Sql-Client 开发：当数据库实例、表数量过多，单实例单表最少占用 1 个 solt，存在浪费资源, Job 太多难以统一管理</li>
+<li>DataStream 开发：整库同步，需要自行编写下游处理逻辑；可以做到资源弹性，具体参考<a href="https://doris.apache.org/zh-CN/docs/dev/ecosystem/flink-doris-connector##datastream">Flink Doris Connector</a></li>
+</ul>
+<p>选择 DataStream 开发，根据表 Schema 将如下 changelog 转换为 RowData</p>
+<pre is:raw="" class="astro-code" style="background-color: #282c34; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"><code><span class="line"><span style="color: #ABB2BF">{</span></span>
+<span class="line"><span style="color: #ABB2BF">  </span><span style="color: #E06C75">"before"</span><span style="color: #ABB2BF">: </span><span style="color: #D19A66">null</span><span style="color: #ABB2BF">,</span></span>
+<span class="line"><span style="color: #ABB2BF">  </span><span style="color: #E06C75">"after"</span><span style="color: #ABB2BF">: {</span></span>
+<span class="line"><span style="color: #ABB2BF">    </span><span style="color: #E06C75">"id"</span><span style="color: #ABB2BF">: </span><span style="color: #D19A66">1</span><span style="color: #ABB2BF">,</span></span>
+<span class="line"><span style="color: #ABB2BF">    </span><span style="color: #E06C75">"name"</span><span style="color: #ABB2BF">: </span><span style="color: #98C379">"name1"</span><span style="color: #ABB2BF">,</span></span>
+<span class="line"><span style="color: #ABB2BF">    </span><span style="color: #E06C75">"age"</span><span style="color: #ABB2BF">: </span><span style="color: #98C379">"1"</span></span>
+<span class="line"><span style="color: #ABB2BF">  },</span></span>
+<span class="line"><span style="color: #ABB2BF">  </span><span style="color: #E06C75">"source"</span><span style="color: #ABB2BF">: {</span></span>
+<span class="line"><span style="color: #ABB2BF">    </span><span style="color: #E06C75">"version"</span><span style="color: #ABB2BF">: </span><span style="color: #98C379">"1.5.4.Final"</span><span style="color: #ABB2BF">,</span></span>
+<span class="line"><span style="color: #ABB2BF">    </span><span style="color: #E06C75">"connector"</span><span style="color: #ABB2BF">: </span><span style="color: #98C379">"mysql"</span><span style="color: #ABB2BF">,</span></span>
+<span class="line"><span style="color: #ABB2BF">    </span><span style="color: #E06C75">"name"</span><span style="color: #ABB2BF">: </span><span style="color: #98C379">"mysql_binlog_source"</span><span style="color: #ABB2BF">,</span></span>
+<span class="line"><span style="color: #ABB2BF">    </span><span style="color: #E06C75">"ts_ms"</span><span style="color: #ABB2BF">: </span><span style="color: #D19A66">1689245998000</span><span style="color: #ABB2BF">,</span></span>
+<span class="line"><span style="color: #ABB2BF">    </span><span style="color: #E06C75">"snapshot"</span><span style="color: #ABB2BF">: </span><span style="color: #98C379">"false"</span><span style="color: #ABB2BF">,</span></span>
+<span class="line"><span style="color: #ABB2BF">    </span><span style="color: #E06C75">"db"</span><span style="color: #ABB2BF">: </span><span style="color: #98C379">"cc"</span><span style="color: #ABB2BF">,</span></span>
+<span class="line"><span style="color: #ABB2BF">    </span><span style="color: #E06C75">"sequence"</span><span style="color: #ABB2BF">: </span><span style="color: #D19A66">null</span><span style="color: #ABB2BF">,</span></span>
+<span class="line"><span style="color: #ABB2BF">    </span><span style="color: #E06C75">"table"</span><span style="color: #ABB2BF">: </span><span style="color: #98C379">"student"</span><span style="color: #ABB2BF">,</span></span>
+<span class="line"><span style="color: #ABB2BF">    </span><span style="color: #E06C75">"server_id"</span><span style="color: #ABB2BF">: </span><span style="color: #D19A66">1</span><span style="color: #ABB2BF">,</span></span>
+<span class="line"><span style="color: #ABB2BF">    </span><span style="color: #E06C75">"gtid"</span><span style="color: #ABB2BF">: </span><span style="color: #D19A66">null</span><span style="color: #ABB2BF">,</span></span>
+<span class="line"><span style="color: #ABB2BF">    </span><span style="color: #E06C75">"file"</span><span style="color: #ABB2BF">: </span><span style="color: #98C379">"mysql-bin.000001"</span><span style="color: #ABB2BF">,</span></span>
+<span class="line"><span style="color: #ABB2BF">    </span><span style="color: #E06C75">"pos"</span><span style="color: #ABB2BF">: </span><span style="color: #D19A66">2781</span><span style="color: #ABB2BF">,</span></span>
+<span class="line"><span style="color: #ABB2BF">    </span><span style="color: #E06C75">"row"</span><span style="color: #ABB2BF">: </span><span style="color: #D19A66">0</span><span style="color: #ABB2BF">,</span></span>
+<span class="line"><span style="color: #ABB2BF">    </span><span style="color: #E06C75">"thread"</span><span style="color: #ABB2BF">: </span><span style="color: #D19A66">null</span><span style="color: #ABB2BF">,</span></span>
+<span class="line"><span style="color: #ABB2BF">    </span><span style="color: #E06C75">"query"</span><span style="color: #ABB2BF">: </span><span style="color: #D19A66">null</span></span>
+<span class="line"><span style="color: #ABB2BF">  },</span></span>
+<span class="line"><span style="color: #ABB2BF">  </span><span style="color: #E06C75">"op"</span><span style="color: #ABB2BF">: </span><span style="color: #98C379">"c"</span><span style="color: #ABB2BF">,</span></span>
+<span class="line"><span style="color: #ABB2BF">  </span><span style="color: #E06C75">"ts_ms"</span><span style="color: #ABB2BF">: </span><span style="color: #D19A66">1689246005928</span><span style="color: #ABB2BF">,</span></span>
+<span class="line"><span style="color: #ABB2BF">  </span><span style="color: #E06C75">"transaction"</span><span style="color: #ABB2BF">: </span><span style="color: #D19A66">null</span></span>
+<span class="line"><span style="color: #ABB2BF">}</span></span></code></pre>
+<pre is:raw="" class="astro-code" style="background-color: #282c34; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"><code><span class="line"><span style="color: #7F848E">// get data by option</span></span>
+<span class="line"><span style="color: #C678DD">if</span><span style="color: #E06C75"> (</span><span style="color: #98C379">"d"</span><span style="color: #ABB2BF">.</span><span style="color: #61AFEF">equals</span><span style="color: #ABB2BF">(op)</span><span style="color: #E06C75">) {</span></span>
+<span class="line"><span style="color: #E06C75">    data </span><span style="color: #56B6C2">=</span><span style="color: #E06C75"> </span><span style="color: #E5C07B">object</span><span style="color: #ABB2BF">.</span><span style="color: #61AFEF">getJSONObject</span><span style="color: #ABB2BF">(</span><span style="color: #98C379">"before"</span><span style="color: #ABB2BF">);</span></span>
+<span class="line"><span style="color: #E06C75">    </span><span style="color: #E5C07B">rowData</span><span style="color: #ABB2BF">.</span><span style="color: #61AFEF">setRowKind</span><span style="color: #ABB2BF">(</span><span style="color: #E5C07B">RowKind</span><span style="color: #ABB2BF">.</span><span style="color: #E5C07B">DELETE</span><span style="color: #ABB2BF">);</span></span>
+<span class="line"><span style="color: #E06C75">} </span><span style="color: #C678DD">else</span><span style="color: #E06C75"> {</span></span>
+<span class="line"><span style="color: #E06C75">    data </span><span style="color: #56B6C2">=</span><span style="color: #E06C75"> </span><span style="color: #E5C07B">object</span><span style="color: #ABB2BF">.</span><span style="color: #61AFEF">getJSONObject</span><span style="color: #ABB2BF">(</span><span style="color: #98C379">"after"</span><span style="color: #ABB2BF">);</span></span>
+<span class="line"><span style="color: #E06C75">    </span><span style="color: #E5C07B">rowData</span><span style="color: #ABB2BF">.</span><span style="color: #61AFEF">setRowKind</span><span style="color: #ABB2BF">(</span><span style="color: #E5C07B">RowKind</span><span style="color: #ABB2BF">.</span><span style="color: #E5C07B">INSERT</span><span style="color: #ABB2BF">);</span></span>
+<span class="line"><span style="color: #E06C75">}</span></span></code></pre>
+<h2 id="问题列表">问题列表</h2>
+<ol>
+<li>
+<p>Doris 数据中文乱码问题</p>
+<pre is:raw="" class="astro-code" style="background-color: #282c34; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"><code><span class="line"><span style="color: #7F848E"># 任务提交参数指定</span></span>
+<span class="line"><span style="color: #ABB2BF">-Denv.java.opts=</span><span style="color: #98C379">"-Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8"</span></span></code></pre>
+</li>
+<li>
+<p>A slave with the same server_uuid/server_id as this slave has connected to the maste</p>
+<p>作业里使用的 server id 和其他作业或其他同步工具使用的 server id 冲突了，server id 需要全局唯一,根据并行度设置，比如作业的 source 设置成了四个并发，可以配置 ‘server-id’ = ‘5001-5004’</p>
+</li>
+<li>
+<p>MySql 数据类型 bigint 和 decimal 乱码</p>
+<pre is:raw="" class="astro-code" style="background-color: #282c34; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"><code><span class="line"><span style="color: #7F848E">// 需要设置 debezium 参数</span></span>
+<span class="line"><span style="color: #E5C07B">properties</span><span style="color: #ABB2BF">.</span><span style="color: #61AFEF">setProperty</span><span style="color: #ABB2BF">(</span><span style="color: #98C379">"bigint.unsigned.handling.mode"</span><span style="color: #ABB2BF">, </span><span style="color: #98C379">"long"</span><span style="color: #ABB2BF">);</span></span>
+<span class="line"><span style="color: #E5C07B">properties</span><span style="color: #ABB2BF">.</span><span style="color: #61AFEF">setProperty</span><span style="color: #ABB2BF">(</span><span style="color: #98C379">"decimal.handling.mode"</span><span style="color: #ABB2BF">, </span><span style="color: #98C379">"string"</span><span style="color: #ABB2BF">);</span></span></code></pre>
+</li>
+<li>
+<p>CDC 已经进入增量阶段，需要新增加表（2.2.0 支持）</p>
+<pre is:raw="" class="astro-code" style="background-color: #282c34; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"><code><span class="line"><span style="color: #E06C75">MySqlSource</span><span style="color: #ABB2BF">.</span><span style="color: #56B6C2">&#x3C;</span><span style="color: #E06C75">String</span><span style="color: #56B6C2">></span><span style="color: #61AFEF">builder</span><span style="color: #E06C75">()</span><span style="color: #ABB2BF">.</span><span style="color: #61AFEF">scanNewlyAddedTableEnabled</span><span style="color: #ABB2BF">(</span><span style="color: #D19A66">true</span><span style="color: #ABB2BF">)</span></span></code></pre>
+</li>
+<li>
+<p>Doris 连接出现权限问题，无法插入数据</p>
+<p>DorisSink 连接用户至少需要 show backends 权限，随机选择 BE</p>
+</li>
+<li>
+<p>导入数据报错 “The connection property zeroDateTimeBehavior only accepts values of the form: exception, round or convertToNull.The value CONVERT_TO_NULL is not in this set”</p>
+<p>修改源码 <code>PooledDataSourceFactory.java</code> 中 <code>CONVERT_TO_NULL</code> 改为 <code>convertToNull</code></p>
+</li>
+<li>
+<p>Source Coordinator Thread already exists. There should never be more than one thread driving the actions of a Source Coordinator</p>
+<p>原因是 jm 的 java.lang.OutOfMemoryError: Java heap space。即使在全量阶段加大资源，进入增量后如果缩小 jm 资源，问题还是存在。参考 <a href="https://issues.apache.org/jira/browse/FLINK-24855">jira issue</a></p>
+</li>
+<li>
+<p>Failed to deserialize data of EventHeaderV4{timestamp=1542193955000, eventType=GTID, serverId=91111, headerLength=19, dataLength=46, nextPosition=1058898202, flags=0}</p>
+<pre is:raw="" class="astro-code" style="background-color: #282c34; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"><code><span class="line"><span style="color: #C678DD">set</span><span style="color: #ABB2BF"> </span><span style="color: #C678DD">global</span><span style="color: #ABB2BF"> slave_net_timeout </span><span style="color: #56B6C2">=</span><span style="color: #ABB2BF"> </span><span style="color: #D19A66">120</span><span style="color: #ABB2BF">; (</span><span style="color: #C678DD">default</span><span style="color: #ABB2BF"> was 30sec)</span></span>
+<span class="line"><span style="color: #C678DD">set</span><span style="color: #ABB2BF"> </span><span style="color: #C678DD">global</span><span style="color: #ABB2BF"> thread_pool_idle_timeout </span><span style="color: #56B6C2">=</span><span style="color: #ABB2BF"> </span><span style="color: #D19A66">120</span><span style="color: #ABB2BF">;</span></span></code></pre>
+</li>
+<li>
+<p>Producer attempted an operation with an old epoch.Either there is a newer producer with the same transactionalId, or the producer’s transaction has been expired by the broker.</p>
+<ul>
+<li>每个算子使用不同的 transactionalId, 每次都给算子指定不会与别人冲突的 name 和 uid 值。 <a href="https://www.mail-archive.com/user-zh@flink.apache.org/msg04071.html">参考</a></li>
+<li>排查是否由于负载太高导致事务超时。</li>
+</ul>
+</li>
+<li>
+<p>org.apache.kafka.connect.errors.ConnectException: The connector is trying to read binlog starting at GTIDs …, but this is no longer available on the server. Reconfigure the connector to use a snapshot when needed.</p>
+<p>常见原因参考 <a href="https://help.aliyun.com/document_detail/470230.html">阿里云 Flink CDC 常见问题</a> ，还有一种是 <code>Some of the GTIDs needed to replicate have been already purged</code> 导致，这个参考 <a href="https://github.com/apache/flink-cdc/issues/1944">github issue</a>, 升级 Flink-CDC 版本解决。</p>
+</li>
+</ol>
+<hr>
+<h2 id="参考">参考</h2>
+<ol>
+<li>
+<p><a href="http://palo.baidu.com/docs/%E4%B8%8B%E8%BD%BD%E4%B8%93%E5%8C%BA/%E9%A2%84%E7%BC%96%E8%AF%91%E7%89%88%E6%9C%AC%E4%B8%8B%E8%BD%BD/">Palo 文档 PALO - 预编译版本下载 | Doris (baidu.com)</a></p>
+</li>
+<li>
+<p><a href="https://github.com/ververica/flink-cdc-connectors/wiki/FAQ(ZH)">FAQ(中文) · ververica/flink-cdc-connectors</a></p>
+</li>
+<li>
+<p><a href="https://help.aliyun.com/document_detail/470230.html">阿里云 Flink CDC 常见问题</a></p>
+</li>
+<li>
+<p><a href="https://debezium.io/documentation/faq">Debezium FAQ</a></p>
+</li>
+</ol>
+    </article>
+
+    <div class="flex justify-between astro-VJ4TPSPI">
+      <ul class="my-8 astro-VJ4TPSPI">
+        <li class="inline-block my-1 underline-offset-4 astro-BLWJYJPT">
+  <a href="/tags/flink/" class="text-sm pr-2 group astro-BLWJYJPT">
+    <svg viewBox="0 0 120 120" id="Layer_1" version="1.1" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000" class="astro-BLWJYJPT"><g id="SVGRepo_bgCarrier" stroke-width="0" class="astro-BLWJYJPT"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" class="astro-BLWJYJPT"></g><g id="SVGRepo_iconCarrier" class="astro-BLWJYJPT">
+        <style type="text/css">
+          .st0 {
+            fill: #9fd8df;
+          }
+          .st1 {
+            opacity: 0.1;
+          }
+          .st2 {
+            fill: #ff7171;
+          }
+        </style>
+        <g class="astro-BLWJYJPT">
+          <path class="st0 astro-BLWJYJPT" d="M60.9,29.8L35.8,18.9c-5.3-2.3-11.4,0.6-13,6.2l-7.2,26.4c-0.4,1.6-0.3,3.2,0.4,4.7l21.6,45.2 c1.2,2.6,4.3,3.6,6.9,2.4l39-18.7c2.6-1.2,3.6-4.3,2.4-6.9L64.3,33C63.6,31.6,62.4,30.4,60.9,29.8z M38.3,40.6 c-2.9,1.4-6.3,0.2-7.7-2.7c-1.4-2.9-0.2-6.3,2.7-7.7s6.3-0.2,7.7,2.7C42.4,35.8,41.1,39.3,38.3,40.6z"></path>
+          <g class="st1 astro-BLWJYJPT">
+            <path d="M84.8,82.6l-39,18.7c-2.6,1.2-5.6,0.1-6.9-2.4L17.3,53.7c-0.7-1.5-0.8-3.1-0.4-4.7l7.2-26.4c0.1-0.2,0.1-0.4,0.2-0.6 c-0.7,0.9-1.2,1.9-1.5,3.1l-7.2,26.4c-0.4,1.6-0.3,3.2,0.4,4.7l21.6,45.2c1.2,2.6,4.3,3.6,6.9,2.4l39-18.7 c1.5-0.7,2.5-2.1,2.8-3.6C85.9,81.9,85.4,82.3,84.8,82.6z" class="astro-BLWJYJPT"></path>
+          </g>
+          <path class="st2 astro-BLWJYJPT" d="M52.7,15.9l-26.6,6.4c-5.6,1.4-8.7,7.4-6.6,12.7l10.1,25.5c0.6,1.5,1.7,2.7,3.1,3.5l44.5,23.1 c2.5,1.3,5.6,0.3,6.9-2.2l19.9-38.4c1.3-2.5,0.3-5.6-2.2-6.9L57.4,16.5C55.9,15.7,54.3,15.5,52.7,15.9z M41.2,38.2 c-1.5,2.8-5,3.9-7.8,2.5s-3.9-5-2.5-7.8c1.5-2.8,5-3.9,7.8-2.5C41.5,31.9,42.7,35.4,41.2,38.2z"></path>
+          <path class="st1 astro-BLWJYJPT" d="M38.7,30.4c2.8,1.5,4,5,2.5,7.8c-0.8,1.5-2.1,2.5-3.7,2.9c0.9-0.5,1.7-1.3,2.2-2.3c1.5-2.8,0.4-6.3-2.5-7.8 c-1.3-0.7-2.8-0.8-4.1-0.5C34.8,29.6,36.9,29.5,38.7,30.4z"></path>
+          <g class="st1 astro-BLWJYJPT">
+            <path d="M84.8,81.7c-1.3,2.5-4.4,3.5-6.9,2.2L33.4,60.8c-1.4-0.7-2.6-2-3.1-3.5L20.1,31.9c-0.5-1.3-0.7-2.6-0.7-3.8 c-0.8,2.2-0.9,4.6,0,7l10.1,25.5c0.6,1.5,1.7,2.7,3.1,3.5l44.5,23.1c2.5,1.3,5.6,0.3,6.9-2.2l19.9-38.4c0.5-0.9,0.7-2,0.5-3 L84.8,81.7z" class="astro-BLWJYJPT"></path>
+          </g>
+          <path class="st1 astro-BLWJYJPT" d="M32.7,64l44.5,23.1c0.4,0.2,0.8,0.4,1.2,0.4l-1.9,0.9c-0.6-0.1-1.3-0.2-1.9-0.6L30.2,64.8 c-1.4-0.7-2.5-2-3.1-3.5l-8.4-21.1l1.2-4.2l9.7,24.5C30.2,62,31.3,63.3,32.7,64z"></path>
+        </g>
+      </g></svg> &nbsp;<span class="astro-BLWJYJPT">flink</span>
+  </a>
+</li><li class="inline-block my-1 underline-offset-4 astro-BLWJYJPT">
+  <a href="/tags/doris/" class="text-sm pr-2 group astro-BLWJYJPT">
+    <svg viewBox="0 0 120 120" id="Layer_1" version="1.1" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000" class="astro-BLWJYJPT"><g id="SVGRepo_bgCarrier" stroke-width="0" class="astro-BLWJYJPT"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" class="astro-BLWJYJPT"></g><g id="SVGRepo_iconCarrier" class="astro-BLWJYJPT">
+        <style type="text/css">
+          .st0 {
+            fill: #9fd8df;
+          }
+          .st1 {
+            opacity: 0.1;
+          }
+          .st2 {
+            fill: #ff7171;
+          }
+        </style>
+        <g class="astro-BLWJYJPT">
+          <path class="st0 astro-BLWJYJPT" d="M60.9,29.8L35.8,18.9c-5.3-2.3-11.4,0.6-13,6.2l-7.2,26.4c-0.4,1.6-0.3,3.2,0.4,4.7l21.6,45.2 c1.2,2.6,4.3,3.6,6.9,2.4l39-18.7c2.6-1.2,3.6-4.3,2.4-6.9L64.3,33C63.6,31.6,62.4,30.4,60.9,29.8z M38.3,40.6 c-2.9,1.4-6.3,0.2-7.7-2.7c-1.4-2.9-0.2-6.3,2.7-7.7s6.3-0.2,7.7,2.7C42.4,35.8,41.1,39.3,38.3,40.6z"></path>
+          <g class="st1 astro-BLWJYJPT">
+            <path d="M84.8,82.6l-39,18.7c-2.6,1.2-5.6,0.1-6.9-2.4L17.3,53.7c-0.7-1.5-0.8-3.1-0.4-4.7l7.2-26.4c0.1-0.2,0.1-0.4,0.2-0.6 c-0.7,0.9-1.2,1.9-1.5,3.1l-7.2,26.4c-0.4,1.6-0.3,3.2,0.4,4.7l21.6,45.2c1.2,2.6,4.3,3.6,6.9,2.4l39-18.7 c1.5-0.7,2.5-2.1,2.8-3.6C85.9,81.9,85.4,82.3,84.8,82.6z" class="astro-BLWJYJPT"></path>
+          </g>
+          <path class="st2 astro-BLWJYJPT" d="M52.7,15.9l-26.6,6.4c-5.6,1.4-8.7,7.4-6.6,12.7l10.1,25.5c0.6,1.5,1.7,2.7,3.1,3.5l44.5,23.1 c2.5,1.3,5.6,0.3,6.9-2.2l19.9-38.4c1.3-2.5,0.3-5.6-2.2-6.9L57.4,16.5C55.9,15.7,54.3,15.5,52.7,15.9z M41.2,38.2 c-1.5,2.8-5,3.9-7.8,2.5s-3.9-5-2.5-7.8c1.5-2.8,5-3.9,7.8-2.5C41.5,31.9,42.7,35.4,41.2,38.2z"></path>
+          <path class="st1 astro-BLWJYJPT" d="M38.7,30.4c2.8,1.5,4,5,2.5,7.8c-0.8,1.5-2.1,2.5-3.7,2.9c0.9-0.5,1.7-1.3,2.2-2.3c1.5-2.8,0.4-6.3-2.5-7.8 c-1.3-0.7-2.8-0.8-4.1-0.5C34.8,29.6,36.9,29.5,38.7,30.4z"></path>
+          <g class="st1 astro-BLWJYJPT">
+            <path d="M84.8,81.7c-1.3,2.5-4.4,3.5-6.9,2.2L33.4,60.8c-1.4-0.7-2.6-2-3.1-3.5L20.1,31.9c-0.5-1.3-0.7-2.6-0.7-3.8 c-0.8,2.2-0.9,4.6,0,7l10.1,25.5c0.6,1.5,1.7,2.7,3.1,3.5l44.5,23.1c2.5,1.3,5.6,0.3,6.9-2.2l19.9-38.4c0.5-0.9,0.7-2,0.5-3 L84.8,81.7z" class="astro-BLWJYJPT"></path>
+          </g>
+          <path class="st1 astro-BLWJYJPT" d="M32.7,64l44.5,23.1c0.4,0.2,0.8,0.4,1.2,0.4l-1.9,0.9c-0.6-0.1-1.3-0.2-1.9-0.6L30.2,64.8 c-1.4-0.7-2.5-2-3.1-3.5l-8.4-21.1l1.2-4.2l9.7,24.5C30.2,62,31.3,63.3,32.7,64z"></path>
+        </g>
+      </g></svg> &nbsp;<span class="astro-BLWJYJPT">doris</span>
+  </a>
+</li>
+      </ul>
+      <button id="back-to-top" class="focus-outline whitespace-nowrap hover:opacity-75 astro-VJ4TPSPI">
+        <svg xmlns="http://www.w3.org/2000/svg" class="rotate-90 astro-VJ4TPSPI">
+          <path d="M13.293 6.293 7.586 12l5.707 5.707 1.414-1.414L10.414 12l4.293-4.293z" class="astro-VJ4TPSPI"></path>
+        </svg>
+        <span class="astro-VJ4TPSPI">Back to Top</span>
+      </button>
+    </div>
+
+    <hr class="my-6 border-dashed astro-VJ4TPSPI">
+
+    <!-- Previous/Next Post Buttons -->
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 astro-VJ4TPSPI">
+      
+      <a href="/posts/statistics-hdfs-small-files" class="flex w-full justify-end gap-1 text-right hover:opacity-75 sm:col-start-2 astro-VJ4TPSPI">
+            <div class="astro-VJ4TPSPI">
+              <span class="astro-VJ4TPSPI">Next Post</span>
+              <div class="text-sm text-skin-accent/85 astro-VJ4TPSPI">统计 HDFS 小文件</div>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right flex-none astro-VJ4TPSPI">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" class="astro-VJ4TPSPI"></path><path d="M9 6l6 6l-6 6" class="astro-VJ4TPSPI"></path>
+            </svg>
+          </a>
+    </div>
+  </main><footer class="mt-auto astro-SZ7XMLTE">
+  <div class="max-w-4xl mx-auto px-0">
+  <hr class="border-skin-line" aria-hidden="true">
+</div>
+  <div class="footer-wrapper astro-SZ7XMLTE">
+    <div class="copyright-wrapper astro-SZ7XMLTE">
+      <span class="astro-SZ7XMLTE">Powered by <a href="https://github.com/satnaing/astro-paper" class="text-skin-accent decoration-dashed underline-offset-4 hover:underline astro-SZ7XMLTE">
+          Astro-Paper</a></span>
+    </div>
+  </div>
+</footer>
+  </body></html>
+
+
+<script>
+  /** Create a progress indicator
+   *  at the top */
+  function createProgressBar() {
+    // Create the main container div
+    const progressContainer = document.createElement("div");
+    progressContainer.className =
+      "progress-container fixed top-0 z-10 h-1 w-full bg-skin-fill";
+
+    // Create the progress bar div
+    const progressBar = document.createElement("div");
+    progressBar.className = "progress-bar h-1 w-0 bg-skin-accent";
+    progressBar.id = "myBar";
+
+    // Append the progress bar to the progress container
+    progressContainer.appendChild(progressBar);
+
+    // Append the progress container to the document body or any other desired parent element
+    document.body.appendChild(progressContainer);
+  }
+  createProgressBar();
+
+  /** Update the progress bar
+   *  when user scrolls */
+  function updateScrollProgress() {
+    const winScroll =
+      document.body.scrollTop || document.documentElement.scrollTop;
+    const height =
+      document.documentElement.scrollHeight -
+      document.documentElement.clientHeight;
+    const scrolled = (winScroll / height) * 100;
+    if (document) {
+      const myBar = document.getElementById("myBar");
+      if (myBar) {
+        myBar.style.width = scrolled + "%";
+      }
+    }
+  }
+  document.addEventListener("scroll", updateScrollProgress);
+
+  /** Attaches copy buttons to code blocks in the document,
+   * allowing users to copy code easily. */
+  function attachCopyButtons() {
+    let copyButtonLabel = "Copy";
+    let codeBlocks = Array.from(document.querySelectorAll("pre"));
+
+    for (let codeBlock of codeBlocks) {
+      let wrapper = document.createElement("div");
+      wrapper.style.position = "relative";
+
+      let copyButton = document.createElement("button");
+      copyButton.className =
+        "copy-code absolute right-3 -top-3 rounded bg-skin-card px-2 py-1 text-xs leading-4 text-skin-base font-medium";
+      copyButton.innerHTML = copyButtonLabel;
+      codeBlock.setAttribute("tabindex", "0");
+      codeBlock.appendChild(copyButton);
+
+      // wrap codebock with relative parent element
+      codeBlock.parentNode.insertBefore(wrapper, codeBlock);
+      wrapper.appendChild(codeBlock);
+
+      copyButton.addEventListener("click", async () => {
+        await copyCode(codeBlock, copyButton);
+      });
+    }
+
+    async function copyCode(block, button) {
+      let code = block.querySelector("code");
+      let text = code.innerText;
+
+      await navigator.clipboard.writeText(text);
+
+      // visual feedback that task is completed
+      button.innerText = "Copied";
+
+      setTimeout(() => {
+        button.innerText = copyButtonLabel;
+      }, 700);
+    }
+  }
+  attachCopyButtons();
+  document.addEventListener("astro:after-swap", attachCopyButtons);
+
+  /* When the user clicks on the "Back to Top" button,
+   * scroll to the top of the document */
+  document.querySelector("#back-to-top")?.addEventListener("click", () => {
+    document.body.scrollTop = 0; // For Safari
+    document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+  });
+</script>

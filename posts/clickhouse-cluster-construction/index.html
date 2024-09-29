@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="canonical" href="https://donglin94.github.io/posts/clickhouse-cluster-construction/">
+    <meta name="generator" content="Astro v2.0.8">
+
+    <!-- General Meta Tags -->
+    <title>ClickHouse 集群搭建</title>
+    <meta name="title" content="ClickHouse 集群搭建">
+    <meta name="description" content="搭建 ClickHouse 集群中遇到的一些问题">
+    <meta name="author" content="东临">
+    <link rel="sitemap" href="/sitemap-index.xml">
+    <link rel="alternate" type="application/rss+xml" href="http://donglin94.github.io/rss.xml">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:title" content="ClickHouse 集群搭建">
+    <meta property="og:description" content="搭建 ClickHouse 集群中遇到的一些问题">
+    <meta property="og:url" content="https://donglin94.github.io/posts/clickhouse-cluster-construction/">
+    <meta property="og:image" content="https://donglin94.github.io/ClickHouse%20%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://donglin94.github.io/posts/clickhouse-cluster-construction/">
+    <meta property="twitter:title" content="ClickHouse 集群搭建">
+    <meta property="twitter:description" content="搭建 ClickHouse 集群中遇到的一些问题">
+    <meta property="twitter:image" content="https://donglin94.github.io/ClickHouse%20%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA.png">
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link rel="stylesheet" href="https://npm.elemecdn.com/lxgw-wenkai-screen-webfont/lxgwwenkaiscreen.css" media="print" onload="this.media='all'">
+
+    <meta name="google-site-verification" content="bV_lNTeBfe0KSyR3BBugQCCuntWq18t7FioMb6DyMpU">
+
+    <script defer src="https://umami-psi-blush.vercel.app/script.js" data-website-id="babecfec-e561-45ad-8d6a-303698b46449"></script>
+
+    <script src="/toggle-theme.js"></script>
+  <link rel="stylesheet" href="/_astro/404.dfc86677.css" />
+<link rel="stylesheet" href="/_astro/about.fcb86bbc.css" />
+<link rel="stylesheet" href="/_astro/about.efa97651.css" />
+<link rel="stylesheet" href="/_astro/_slug_.fb16cf70.css" />
+<link rel="stylesheet" href="/_astro/_slug_.bc730ff5.css" />
+<link rel="stylesheet" href="/_astro/_slug_.5c31dbb2.css" />
+<link rel="stylesheet" href="/_astro/_slug_.d833ca2a.css" /><script type="module">const e=document.querySelector(".hamburger-menu"),n=document.querySelector("#menu-items")?.classList,t=document.querySelector(".icon-container")?.classList,o=document.querySelector("#first-line")?.classList,a=document.querySelector("#second-line ")?.classList,s=document.querySelector("#third-line")?.classList;e?.addEventListener("click",function(){e?.getAttribute("aria-expanded")==="false"?(e?.setAttribute("aria-expanded","true"),e?.setAttribute("aria-label","Close Menu"),n?.remove("display-none"),t?.remove("flex"),t?.add("relative"),o?.add("rotate-45","absolute","bottom-1/2"),s?.add("display-none"),a?.add("!w-full","-rotate-45","absolute","bottom-1/2")):(e?.setAttribute("aria-expanded","false"),e?.setAttribute("aria-label","Open Menu"),n?.add("display-none"),t?.add("flex"),t?.remove("relative"),o?.remove("rotate-45","absolute","bottom-1/2"),s?.remove("display-none"),a?.remove("!w-full","-rotate-45","absolute","bottom-1/2"))});
+</script></head>
+  <body>
+    <header class="astro-3EF6KSR2">
+  <a id="skip-to-content" href="#main-content" class="astro-3EF6KSR2">Skip to content</a>
+  <div class="nav-container astro-3EF6KSR2">
+    <div class="top-nav-wrap astro-3EF6KSR2">
+      <a href="/" class="logo whitespace-nowrap astro-3EF6KSR2">
+        DongLin&#39;s Blog
+      </a>
+      <nav id="nav-menu" class="astro-3EF6KSR2">
+        <button class="hamburger-menu focus-outline astro-3EF6KSR2" aria-label="Open Menu" aria-expanded="false" aria-controls="menu-items">
+          <div class="icon-container flex astro-3EF6KSR2">
+            <div id="first-line" class="astro-3EF6KSR2"></div>
+            <div id="second-line" class="astro-3EF6KSR2"></div>
+            <div id="third-line" class="astro-3EF6KSR2"></div>
+          </div>
+        </button>
+        <ul id="menu-items" class="display-none sm:flex astro-3EF6KSR2">
+          <li class="astro-3EF6KSR2">
+            <a href="/posts/" class=" astro-3EF6KSR2">
+              Posts
+            </a>
+          </li>
+          <li class="astro-3EF6KSR2">
+            <a href="/about/" class=" astro-3EF6KSR2">
+              About
+            </a>
+          </li>
+          <li class="astro-3EF6KSR2">
+            <a type="button" href="/search/" tabindex="0" class="group focus-outline p-3 sm:p-1  astro-3EF6KSR2 astro-5EUNQZKT" aria-label="search" title="Search">
+  <svg xmlns="http://www.w3.org/2000/svg" class="scale-125 sm:scale-100 astro-3EF6KSR2"><path d="M19.023 16.977a35.13 35.13 0 0 1-1.367-1.384c-.372-.378-.596-.653-.596-.653l-2.8-1.337A6.962 6.962 0 0 0 16 9c0-3.859-3.14-7-7-7S2 5.141 2 9s3.14 7 7 7c1.763 0 3.37-.66 4.603-1.739l1.337 2.8s.275.224.653.596c.387.363.896.854 1.384 1.367l1.358 1.392.604.646 2.121-2.121-.646-.604c-.379-.372-.885-.866-1.391-1.36zM9 14c-2.757 0-5-2.243-5-5s2.243-5 5-5 5 2.243 5 5-2.243 5-5 5z" class="astro-3EF6KSR2"></path>
+              </svg>
+</a>
+          </li>
+          <li class="astro-3EF6KSR2">
+            <button id="theme-btn" class="focus-outline astro-3EF6KSR2" title="Toggles light & dark" aria-label="auto" aria-live="polite">
+                  <svg xmlns="http://www.w3.org/2000/svg" id="moon-svg" class="astro-3EF6KSR2">
+                    <path d="M20.742 13.045a8.088 8.088 0 0 1-2.077.271c-2.135 0-4.14-.83-5.646-2.336a8.025 8.025 0 0 1-2.064-7.723A1 1 0 0 0 9.73 2.034a10.014 10.014 0 0 0-4.489 2.582c-3.898 3.898-3.898 10.243 0 14.143a9.937 9.937 0 0 0 7.072 2.93 9.93 9.93 0 0 0 7.07-2.929 10.007 10.007 0 0 0 2.583-4.491 1.001 1.001 0 0 0-1.224-1.224zm-2.772 4.301a7.947 7.947 0 0 1-5.656 2.343 7.953 7.953 0 0 1-5.658-2.344c-3.118-3.119-3.118-8.195 0-11.314a7.923 7.923 0 0 1 2.06-1.483 10.027 10.027 0 0 0 2.89 7.848 9.972 9.972 0 0 0 7.848 2.891 8.036 8.036 0 0 1-1.484 2.059z" class="astro-3EF6KSR2"></path>
+                  </svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" id="sun-svg" class="astro-3EF6KSR2">
+                    <path d="M6.993 12c0 2.761 2.246 5.007 5.007 5.007s5.007-2.246 5.007-5.007S14.761 6.993 12 6.993 6.993 9.239 6.993 12zM12 8.993c1.658 0 3.007 1.349 3.007 3.007S13.658 15.007 12 15.007 8.993 13.658 8.993 12 10.342 8.993 12 8.993zM10.998 19h2v3h-2zm0-17h2v3h-2zm-9 9h3v2h-3zm17 0h3v2h-3zM4.219 18.363l2.12-2.122 1.415 1.414-2.12 2.122zM16.24 6.344l2.122-2.122 1.414 1.414-2.122 2.122zM6.342 7.759 4.22 5.637l1.415-1.414 2.12 2.122zm13.434 10.605-1.414 1.414-2.122-2.122 1.414-1.414z" class="astro-3EF6KSR2"></path>
+                  </svg>
+                </button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+  <div class="max-w-4xl mx-auto px-4">
+  <hr class="border-skin-line" aria-hidden="true">
+</div>
+</header><div class="mx-auto flex w-full max-w-4xl justify-start px-2 astro-VJ4TPSPI">
+    <button class="focus-outline mb-2 mt-8 flex hover:opacity-75 astro-VJ4TPSPI" onclick="(() => (history.length === 1) ? window.location = '/' : history.back())()">
+    </button>
+  </div><main id="main-content" class="astro-VJ4TPSPI">
+    <h1 class="post-title astro-VJ4TPSPI">ClickHouse 集群搭建</h1>
+    <div class="flex items-center space-x-2 opacity-80 my-2 astro-VJ4TPSPI"><svg xmlns="http://www.w3.org/2000/svg" class="scale-90 inline-block h-6 w-6 fill-skin-base" aria-hidden="true"><path d="M7 11h2v2H7zm0 4h2v2H7zm4-4h2v2h-2zm0 4h2v2h-2zm4-4h2v2h-2zm0 4h2v2h-2z"></path><path d="M5 22h14c1.103 0 2-.897 2-2V6c0-1.103-.897-2-2-2h-2V2h-2v2H9V2H7v2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2zM19 8l.001 12H5V8h14z"></path></svg><span>Posted on:</span><span class="text-sm">2021年6月21日</span></div>
+    <article id="article" role="article" class="prose mx-auto mt-8 max-w-5xl astro-VJ4TPSPI">
+      <h2 id="人群圈选业务痛点">人群圈选业务痛点</h2>
+<ul>
+<li>用户标签多、标签丰富，标签列可达成百甚至上千列。</li>
+<li>数据量庞大，用户数多，从而所需运算量也极大。</li>
+<li>圈选条件组合多样化，没有固定索引可以优化，存储空间占用极大。</li>
+<li>性能要求高，圈选结果要求及时响应，过长的延时会造成营销人群的不准确。</li>
+<li>数据更新时效要求高，用户画像要求近实时的更新，过期的人群信息也将直接影响圈选的精准性。<!-- more --></li>
+</ul>
+<h2 id="clickhouse-特性">ClickHouse 特性</h2>
+<ul>
+<li>优势
+<ol>
+<li>查询速度快</li>
+<li>存储压缩率高，节省空间</li>
+<li>架构简单，集群中所有节点功能相同，规避单点故障</li>
+<li>社区活跃，应用广泛，产品成熟度高</li>
+</ol>
+</li>
+<li>不足
+<ol>
+<li>不支持事务、异步删除与更新</li>
+<li>不适合高并发场景</li>
+<li>不支持标准 sql，join 由内部实现</li>
+<li>集群在线扩容支持不佳，运维成本高</li>
+</ol>
+</li>
+</ul>
+<h2 id="下载安装包">下载安装包</h2>
+<pre is:raw="" class="astro-code" style="background-color: #282c34; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"><code><span class="line"><span style="color: #ABB2BF">sudo yum install yum-utils</span></span>
+<span class="line"><span style="color: #ABB2BF">sudo rpm --import https://repo.clickhouse.tech/CLICKHOUSE-KEY.GPG</span></span>
+<span class="line"><span style="color: #ABB2BF">sudo yum-config-manager --add-repo https://repo.clickhouse.tech/rpm/clickhouse.repo</span></span>
+<span class="line"><span style="color: #ABB2BF">sudo yum install clickhouse-server clickhouse-client</span></span></code></pre>
+<h2 id="文件目录">文件目录</h2>
+<pre is:raw="" class="astro-code" style="background-color: #282c34; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"><code><span class="line"><span style="color: #7F848E"># 默认数据存储路径</span></span>
+<span class="line"><span style="color: #ABB2BF">/var/lib/clickhouse</span></span>
+<span class="line"></span>
+<span class="line"><span style="color: #7F848E"># 默认日志路径</span></span>
+<span class="line"><span style="color: #ABB2BF">/var/log/clickhouse-server</span></span>
+<span class="line"></span>
+<span class="line"><span style="color: #7F848E"># 服务端配置文件路径</span></span>
+<span class="line"><span style="color: #ABB2BF">/etc/clickhouse-server</span></span>
+<span class="line"></span>
+<span class="line"><span style="color: #7F848E"># 核心配置文件详解：https://www.e-learn.cn/topic/4050968</span></span>
+<span class="line"><span style="color: #ABB2BF">/etc/clickhouse-server/config.xml</span></span>
+<span class="line"></span>
+<span class="line"><span style="color: #7F848E"># 客户端配置文件路径</span></span>
+<span class="line"><span style="color: #ABB2BF">/etc/clickhouse-client</span></span></code></pre>
+<h2 id="命令">命令</h2>
+<pre is:raw="" class="astro-code" style="background-color: #282c34; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"><code><span class="line"><span style="color: #7F848E"># 服务端命令</span></span>
+<span class="line"><span style="color: #ABB2BF">service clickhouse-server start | status | restart | stop</span></span>
+<span class="line"></span>
+<span class="line"><span style="color: #7F848E"># 调试，日志打印在控制台</span></span>
+<span class="line"><span style="color: #ABB2BF">sudo -u clickhouse /usr/bin/clickhouse-server --config-file /etc/clickhouse-server/config.xml</span></span>
+<span class="line"></span>
+<span class="line"><span style="color: #7F848E"># 启动客户端</span></span>
+<span class="line"><span style="color: #ABB2BF">clickhouse-client --port 9003</span></span></code></pre>
+<h2 id="集群部署">集群部署</h2>
+<ol>
+<li>
+<p>在群集的所有机器上安装 ClickHouse 服务端</p>
+</li>
+<li>
+<p>在配置文件中设置群集配置</p>
+<pre is:raw="" class="astro-code" style="background-color: #282c34; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"><code><span class="line"><span style="color: #7F848E">&#x3C;!--config.xml配置--></span></span>
+<span class="line"><span style="color: #ABB2BF">&#x3C;</span><span style="color: #E06C75">tcp_port</span><span style="color: #ABB2BF">>9003&#x3C;/</span><span style="color: #E06C75">tcp_port</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">&#x3C;</span><span style="color: #E06C75">listen_host</span><span style="color: #ABB2BF">>::&#x3C;/</span><span style="color: #E06C75">listen_host</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #7F848E">&#x3C;!--incl属性表示可从外部文件中获取节点名--></span></span>
+<span class="line"><span style="color: #ABB2BF">&#x3C;</span><span style="color: #E06C75">remote_servers</span><span style="color: #ABB2BF"> </span><span style="color: #D19A66">incl</span><span style="color: #ABB2BF">=</span><span style="color: #98C379">"clickhouse_remote_servers"</span><span style="color: #ABB2BF"> /></span></span>
+<span class="line"><span style="color: #ABB2BF">&#x3C;</span><span style="color: #E06C75">zookeeper</span><span style="color: #ABB2BF"> </span><span style="color: #D19A66">incl</span><span style="color: #ABB2BF">=</span><span style="color: #98C379">"zookeeper-servers"</span><span style="color: #ABB2BF"> </span><span style="color: #D19A66">optional</span><span style="color: #ABB2BF">=</span><span style="color: #98C379">"true"</span><span style="color: #ABB2BF"> /></span></span>
+<span class="line"><span style="color: #ABB2BF">&#x3C;</span><span style="color: #E06C75">macros</span><span style="color: #ABB2BF"> </span><span style="color: #D19A66">incl</span><span style="color: #ABB2BF">=</span><span style="color: #98C379">"macros"</span><span style="color: #ABB2BF"> </span><span style="color: #D19A66">optional</span><span style="color: #ABB2BF">=</span><span style="color: #98C379">"true"</span><span style="color: #ABB2BF"> /></span></span>
+<span class="line"><span style="color: #7F848E">&#x3C;!--使用外部扩展配置文件--></span></span>
+<span class="line"><span style="color: #ABB2BF">&#x3C;</span><span style="color: #E06C75">include_from</span><span style="color: #ABB2BF">>/etc/clickhouse-server/metrika.xml&#x3C;/</span><span style="color: #E06C75">include_from</span><span style="color: #ABB2BF">></span></span>
+<span class="line"></span>
+<span class="line"><span style="color: #7F848E">&#x3C;!--metrika.xml配置--></span></span>
+<span class="line"><span style="color: #ABB2BF">&#x3C;</span><span style="color: #E06C75">yandex</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">  </span><span style="color: #7F848E">&#x3C;!-- 集群配置 --></span></span>
+<span class="line"><span style="color: #ABB2BF">  &#x3C;</span><span style="color: #E06C75">clickhouse_remote_servers</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">    &#x3C;</span><span style="color: #E06C75">ck_cluster</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">      &#x3C;</span><span style="color: #E06C75">shard</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">        &#x3C;</span><span style="color: #E06C75">replica</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">          &#x3C;</span><span style="color: #E06C75">host</span><span style="color: #ABB2BF">>worker07&#x3C;/</span><span style="color: #E06C75">host</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">          &#x3C;</span><span style="color: #E06C75">port</span><span style="color: #ABB2BF">>9003&#x3C;/</span><span style="color: #E06C75">port</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">        &#x3C;/</span><span style="color: #E06C75">replica</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">        &#x3C;</span><span style="color: #E06C75">replica</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">          &#x3C;</span><span style="color: #E06C75">host</span><span style="color: #ABB2BF">>worker08&#x3C;/</span><span style="color: #E06C75">host</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">          &#x3C;</span><span style="color: #E06C75">port</span><span style="color: #ABB2BF">>9003&#x3C;/</span><span style="color: #E06C75">port</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">        &#x3C;/</span><span style="color: #E06C75">replica</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">        &#x3C;</span><span style="color: #E06C75">replica</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">          &#x3C;</span><span style="color: #E06C75">host</span><span style="color: #ABB2BF">>worker09&#x3C;/</span><span style="color: #E06C75">host</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">          &#x3C;</span><span style="color: #E06C75">port</span><span style="color: #ABB2BF">>9003&#x3C;/</span><span style="color: #E06C75">port</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">        &#x3C;/</span><span style="color: #E06C75">replica</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">      &#x3C;/</span><span style="color: #E06C75">shard</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">    &#x3C;/</span><span style="color: #E06C75">ck_cluster</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">  &#x3C;/</span><span style="color: #E06C75">clickhouse_remote_servers</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">  </span><span style="color: #7F848E">&#x3C;!--zookeeper相关配置--></span></span>
+<span class="line"><span style="color: #ABB2BF">  &#x3C;</span><span style="color: #E06C75">zookeeper-servers</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">    &#x3C;</span><span style="color: #E06C75">node</span><span style="color: #ABB2BF"> </span><span style="color: #D19A66">index</span><span style="color: #ABB2BF">=</span><span style="color: #98C379">"3"</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">      &#x3C;</span><span style="color: #E06C75">host</span><span style="color: #ABB2BF">>master01&#x3C;/</span><span style="color: #E06C75">host</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">      &#x3C;</span><span style="color: #E06C75">port</span><span style="color: #ABB2BF">>2181&#x3C;/</span><span style="color: #E06C75">port</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">    &#x3C;/</span><span style="color: #E06C75">node</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">    &#x3C;</span><span style="color: #E06C75">node</span><span style="color: #ABB2BF"> </span><span style="color: #D19A66">index</span><span style="color: #ABB2BF">=</span><span style="color: #98C379">"2"</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">      &#x3C;</span><span style="color: #E06C75">host</span><span style="color: #ABB2BF">>worker01&#x3C;/</span><span style="color: #E06C75">host</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">      &#x3C;</span><span style="color: #E06C75">port</span><span style="color: #ABB2BF">>2181&#x3C;/</span><span style="color: #E06C75">port</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">    &#x3C;/</span><span style="color: #E06C75">node</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">    &#x3C;</span><span style="color: #E06C75">node</span><span style="color: #ABB2BF"> </span><span style="color: #D19A66">index</span><span style="color: #ABB2BF">=</span><span style="color: #98C379">"1"</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">      &#x3C;</span><span style="color: #E06C75">host</span><span style="color: #ABB2BF">>worker02&#x3C;/</span><span style="color: #E06C75">host</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">      &#x3C;</span><span style="color: #E06C75">port</span><span style="color: #ABB2BF">>2181&#x3C;/</span><span style="color: #E06C75">port</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">    &#x3C;/</span><span style="color: #E06C75">node</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">    &#x3C;</span><span style="color: #E06C75">node</span><span style="color: #ABB2BF"> </span><span style="color: #D19A66">index</span><span style="color: #ABB2BF">=</span><span style="color: #98C379">"5"</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">      &#x3C;</span><span style="color: #E06C75">host</span><span style="color: #ABB2BF">>worker03&#x3C;/</span><span style="color: #E06C75">host</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">      &#x3C;</span><span style="color: #E06C75">port</span><span style="color: #ABB2BF">>2181&#x3C;/</span><span style="color: #E06C75">port</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">    &#x3C;/</span><span style="color: #E06C75">node</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">    &#x3C;</span><span style="color: #E06C75">node</span><span style="color: #ABB2BF"> </span><span style="color: #D19A66">index</span><span style="color: #ABB2BF">=</span><span style="color: #98C379">"4"</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">      &#x3C;</span><span style="color: #E06C75">host</span><span style="color: #ABB2BF">>worker04&#x3C;/</span><span style="color: #E06C75">host</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">      &#x3C;</span><span style="color: #E06C75">port</span><span style="color: #ABB2BF">>2181&#x3C;/</span><span style="color: #E06C75">port</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">    &#x3C;/</span><span style="color: #E06C75">node</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">  &#x3C;/</span><span style="color: #E06C75">zookeeper-servers</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">  </span><span style="color: #7F848E">&#x3C;!--环境变量 --></span></span>
+<span class="line"><span style="color: #ABB2BF">  &#x3C;</span><span style="color: #E06C75">macros</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">    &#x3C;</span><span style="color: #E06C75">shard</span><span style="color: #ABB2BF">>0&#x3C;/</span><span style="color: #E06C75">shard</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">    &#x3C;</span><span style="color: #E06C75">replica</span><span style="color: #ABB2BF">>worker07&#x3C;/</span><span style="color: #E06C75">replica</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">  &#x3C;/</span><span style="color: #E06C75">macros</span><span style="color: #ABB2BF">></span></span>
+<span class="line"><span style="color: #ABB2BF">&#x3C;/</span><span style="color: #E06C75">yandex</span><span style="color: #ABB2BF">></span></span></code></pre>
+</li>
+<li>
+<p>分发配置，其自动生效，查看集群</p>
+<pre is:raw="" class="astro-code" style="background-color: #282c34; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"><code><span class="line"><span style="color: #C678DD">select</span><span style="color: #ABB2BF"> * </span><span style="color: #C678DD">from</span><span style="color: #ABB2BF"> </span><span style="color: #C678DD">system</span><span style="color: #ABB2BF">.clusters;</span></span></code></pre>
+</li>
+</ol>
+<h2 id="一致性">一致性</h2>
+<p>internal_replication：表示是否只将数据写入其中一个副本，默认为 false</p>
+<p>四种复制模式：</p>
+<ul>
+<li>非复制表，internal_replication=false。写入单机表时，不同服务器查询结果不同；插入到分布式表中的数据被插入到两个本地表中，如果在插入期间没有问题，则两个本地表上的数据保持同步。我们称之为“穷人的复制”，因为复制在网络出现问题的情况下容易发生分歧，没有一个简单的方法来确定哪一个是正确的复制。</li>
+<li>非复制表，internal_replication=true。数据只被插入到一个本地表中，但没有任何机制可以将它转移到另一个表中。因此，在不同主机上的本地表看到了不同的数据，查询分布式表时会出现非预期的数据。显然，这是配置 ClickHouse 集群的一种不正确的方法。</li>
+<li>复制表，internal_replication=true。插入到分布式表中的数据仅插入到其中一个本地表中，但通过复制机制传输到另一个主机上的表中。因此两个本地表上的数据保持同步。这是官方推荐配置。</li>
+<li>复制表，internal_replication=false。数据被插入到两个本地表中，但同时复制表的机制保证重复数据会被删除。数据会从插入的第一个节点复制到其它的节点。其它节点拿到数据后如果发现数据重复，数据会被丢弃。这种情况下，虽然复制保持同步，没有错误发生。但由于不断的重复复制流，会导致写入性能明显的下降。所以这种配置实际应该是避免的。</li>
+</ul>
+<h2 id="优化">优化</h2>
+<ol>
+<li>读的时候是用 distribution 表去读取数据，轮询写入本地表</li>
+<li>写入时尽量“大批量，少批次”写入</li>
+<li>尽量使用大宽表代替 join，列宽支持 1w+</li>
+</ol>
+<h2 id="集群测试">集群测试</h2>
+<pre is:raw="" class="astro-code" style="background-color: #282c34; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"><code><span class="line"><span style="color: #7F848E">-- 先创建本地表，再创建分布式表，往分布式表插入数据，数据随机分布在本地表</span></span>
+<span class="line"><span style="color: #7F848E">-- 在每个实例上创建本地表</span></span>
+<span class="line"><span style="color: #C678DD">CREATE</span><span style="color: #ABB2BF"> </span><span style="color: #C678DD">TABLE</span><span style="color: #ABB2BF"> </span><span style="color: #C678DD">default</span><span style="color: #ABB2BF">.cluster3s1r_local(</span><span style="color: #98C379">`id`</span><span style="color: #ABB2BF"> Int32,</span><span style="color: #98C379">`website`</span><span style="color: #ABB2BF"> String,</span><span style="color: #98C379">`wechat`</span><span style="color: #ABB2BF"> String,</span><span style="color: #98C379">`FlightDate`</span><span style="color: #ABB2BF"> </span><span style="color: #C678DD">Date</span><span style="color: #ABB2BF">,</span><span style="color: #56B6C2">Year</span><span style="color: #ABB2BF"> UInt16) ENGINE </span><span style="color: #56B6C2">=</span><span style="color: #ABB2BF"> MergeTree(FlightDate, (</span><span style="color: #56B6C2">Year</span><span style="color: #ABB2BF">, FlightDate), </span><span style="color: #D19A66">8192</span><span style="color: #ABB2BF">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color: #7F848E">-- 创建一个分布式表(指定集群名、数据库名、数据表名、分片KEY)</span></span>
+<span class="line"><span style="color: #C678DD">CREATE</span><span style="color: #ABB2BF"> </span><span style="color: #C678DD">TABLE</span><span style="color: #ABB2BF"> </span><span style="color: #C678DD">default</span><span style="color: #ABB2BF">.cluster3s1r_all </span><span style="color: #C678DD">AS</span><span style="color: #ABB2BF"> cluster3s1r_local ENGINE </span><span style="color: #56B6C2">=</span><span style="color: #ABB2BF"> </span><span style="color: #C678DD">Distributed</span><span style="color: #ABB2BF">(ck_cluster, </span><span style="color: #C678DD">default</span><span style="color: #ABB2BF">, cluster3s1r_local, </span><span style="color: #56B6C2">rand</span><span style="color: #ABB2BF">());</span></span>
+<span class="line"></span>
+<span class="line"><span style="color: #7F848E">-- 插入测试数据</span></span>
+<span class="line"><span style="color: #C678DD">INSERT</span><span style="color: #ABB2BF"> </span><span style="color: #C678DD">INTO</span><span style="color: #ABB2BF"> </span><span style="color: #C678DD">default</span><span style="color: #ABB2BF">.cluster3s1r_all</span></span>
+<span class="line"><span style="color: #ABB2BF">(id,website,wechat,FlightDate,</span><span style="color: #56B6C2">Year</span><span style="color: #ABB2BF">)</span><span style="color: #C678DD">values</span><span style="color: #ABB2BF">(</span><span style="color: #D19A66">1</span><span style="color: #ABB2BF">,</span><span style="color: #98C379">'https://niocoder.com/'</span><span style="color: #ABB2BF">,</span><span style="color: #98C379">'java干货'</span><span style="color: #ABB2BF">,</span><span style="color: #98C379">'2020-11-28'</span><span style="color: #ABB2BF">,</span><span style="color: #D19A66">2020</span><span style="color: #ABB2BF">);</span></span>
+<span class="line"><span style="color: #C678DD">INSERT</span><span style="color: #ABB2BF"> </span><span style="color: #C678DD">INTO</span><span style="color: #ABB2BF"> </span><span style="color: #C678DD">default</span><span style="color: #ABB2BF">.cluster3s1r_all (id,website,wechat,FlightDate,</span><span style="color: #56B6C2">Year</span><span style="color: #ABB2BF">)</span><span style="color: #C678DD">values</span><span style="color: #ABB2BF">(</span><span style="color: #D19A66">2</span><span style="color: #ABB2BF">,</span><span style="color: #98C379">'http://www.merryyou.cn/'</span><span style="color: #ABB2BF">,</span><span style="color: #98C379">'javaganhuo'</span><span style="color: #ABB2BF">,</span><span style="color: #98C379">'2020-11-28'</span><span style="color: #ABB2BF">,</span><span style="color: #D19A66">2020</span><span style="color: #ABB2BF">);</span></span>
+<span class="line"><span style="color: #C678DD">INSERT</span><span style="color: #ABB2BF"> </span><span style="color: #C678DD">INTO</span><span style="color: #ABB2BF"> </span><span style="color: #C678DD">default</span><span style="color: #ABB2BF">.cluster3s1r_all (id,website,wechat,FlightDate,</span><span style="color: #56B6C2">Year</span><span style="color: #ABB2BF">)</span><span style="color: #C678DD">values</span><span style="color: #ABB2BF">(</span><span style="color: #D19A66">3</span><span style="color: #ABB2BF">,</span><span style="color: #98C379">'http://www.xxxxx.cn/'</span><span style="color: #ABB2BF">,</span><span style="color: #98C379">'xxxxx'</span><span style="color: #ABB2BF">,</span><span style="color: #98C379">'2020-11-28'</span><span style="color: #ABB2BF">,</span><span style="color: #D19A66">2020</span><span style="color: #ABB2BF">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color: #7F848E">-- 查询分布式表</span></span>
+<span class="line"><span style="color: #C678DD">select</span><span style="color: #ABB2BF"> * </span><span style="color: #C678DD">from</span><span style="color: #ABB2BF"> cluster3s1r_all;</span></span>
+<span class="line"><span style="color: #7F848E">-- 查询本地表</span></span>
+<span class="line"><span style="color: #C678DD">select</span><span style="color: #ABB2BF"> * </span><span style="color: #C678DD">from</span><span style="color: #ABB2BF"> cluster3s1r_local;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color: #7F848E">-- 创建复制表，连接zk，不用创建分布式表，不配置集群clickhouse_remote_servers。数据写入本地表，其他节点自动同步数据</span></span>
+<span class="line"><span style="color: #7F848E">-- 创建复制表</span></span>
+<span class="line"><span style="color: #C678DD">CREATE</span><span style="color: #ABB2BF"> </span><span style="color: #C678DD">TABLE</span><span style="color: #ABB2BF"> </span><span style="color: #C678DD">default</span><span style="color: #ABB2BF">.cluster1s3r_local </span><span style="color: #C678DD">on</span><span style="color: #ABB2BF"> cluster ck_cluster (</span><span style="color: #98C379">`id`</span><span style="color: #ABB2BF"> Int32,</span><span style="color: #98C379">`website`</span><span style="color: #ABB2BF"> String,</span><span style="color: #98C379">`wechat`</span><span style="color: #ABB2BF"> String,</span><span style="color: #98C379">`FlightDate`</span><span style="color: #ABB2BF"> </span><span style="color: #C678DD">Date</span><span style="color: #ABB2BF">,</span><span style="color: #56B6C2">Year</span><span style="color: #ABB2BF"> UInt16) ENGINE </span><span style="color: #56B6C2">=</span><span style="color: #ABB2BF"> ReplicatedMergeTree(</span><span style="color: #98C379">'/clickhouse/tables/{shard}/cluster1s3r_local'</span><span style="color: #ABB2BF">, </span><span style="color: #98C379">'{replica}'</span><span style="color: #ABB2BF">, FlightDate, (</span><span style="color: #56B6C2">Year</span><span style="color: #ABB2BF">, FlightDate), </span><span style="color: #D19A66">8192</span><span style="color: #ABB2BF">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color: #C678DD">INSERT</span><span style="color: #ABB2BF"> </span><span style="color: #C678DD">INTO</span><span style="color: #ABB2BF"> </span><span style="color: #C678DD">default</span><span style="color: #ABB2BF">.cluster1s3r_all</span></span>
+<span class="line"><span style="color: #ABB2BF">(id,website,wechat,FlightDate,</span><span style="color: #56B6C2">Year</span><span style="color: #ABB2BF">)</span><span style="color: #C678DD">values</span><span style="color: #ABB2BF">(</span><span style="color: #D19A66">1</span><span style="color: #ABB2BF">,</span><span style="color: #98C379">'https://niocoder.com/'</span><span style="color: #ABB2BF">,</span><span style="color: #98C379">'java干货'</span><span style="color: #ABB2BF">,</span><span style="color: #98C379">'2020-11-28'</span><span style="color: #ABB2BF">,</span><span style="color: #D19A66">2020</span><span style="color: #ABB2BF">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="color: #C678DD">select</span><span style="color: #ABB2BF"> * </span><span style="color: #C678DD">from</span><span style="color: #ABB2BF"> cluster1s3r_all;</span></span></code></pre>
+<h2 id="问题">问题</h2>
+<ol>
+<li>
+<p>DB::Exception: Effective user of the process (root) does not match the owner of the data (clickhouse). Run under ‘sudo -u clickhouse’.</p>
+<p>sudo -u clickhouse clickhouse-server —config-file=/etc/clickhouse-server/config.xml</p>
+</li>
+<li>
+<p>Access to file denied: /var/log/clickhouse-server/clickhouse-server.log</p>
+<p>chown -R clickhouse /var/log/clickhouse-server/</p>
+</li>
+<li>
+<p>Address already in use</p>
+<p>更改 tcp 配置，切换 9000 端口为 9003</p>
+</li>
+<li>
+<p>There are two exactly the same ClickHouse instances</p>
+<p>单台节点只能部署一个分片副本，即 3 分片 2 副本需要 6 台服务器</p>
+</li>
+</ol>
+    </article>
+
+    <div class="flex justify-between astro-VJ4TPSPI">
+      <ul class="my-8 astro-VJ4TPSPI">
+        <li class="inline-block my-1 underline-offset-4 astro-BLWJYJPT">
+  <a href="/tags/clickhouse/" class="text-sm pr-2 group astro-BLWJYJPT">
+    <svg viewBox="0 0 120 120" id="Layer_1" version="1.1" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000" class="astro-BLWJYJPT"><g id="SVGRepo_bgCarrier" stroke-width="0" class="astro-BLWJYJPT"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" class="astro-BLWJYJPT"></g><g id="SVGRepo_iconCarrier" class="astro-BLWJYJPT">
+        <style type="text/css">
+          .st0 {
+            fill: #9fd8df;
+          }
+          .st1 {
+            opacity: 0.1;
+          }
+          .st2 {
+            fill: #ff7171;
+          }
+        </style>
+        <g class="astro-BLWJYJPT">
+          <path class="st0 astro-BLWJYJPT" d="M60.9,29.8L35.8,18.9c-5.3-2.3-11.4,0.6-13,6.2l-7.2,26.4c-0.4,1.6-0.3,3.2,0.4,4.7l21.6,45.2 c1.2,2.6,4.3,3.6,6.9,2.4l39-18.7c2.6-1.2,3.6-4.3,2.4-6.9L64.3,33C63.6,31.6,62.4,30.4,60.9,29.8z M38.3,40.6 c-2.9,1.4-6.3,0.2-7.7-2.7c-1.4-2.9-0.2-6.3,2.7-7.7s6.3-0.2,7.7,2.7C42.4,35.8,41.1,39.3,38.3,40.6z"></path>
+          <g class="st1 astro-BLWJYJPT">
+            <path d="M84.8,82.6l-39,18.7c-2.6,1.2-5.6,0.1-6.9-2.4L17.3,53.7c-0.7-1.5-0.8-3.1-0.4-4.7l7.2-26.4c0.1-0.2,0.1-0.4,0.2-0.6 c-0.7,0.9-1.2,1.9-1.5,3.1l-7.2,26.4c-0.4,1.6-0.3,3.2,0.4,4.7l21.6,45.2c1.2,2.6,4.3,3.6,6.9,2.4l39-18.7 c1.5-0.7,2.5-2.1,2.8-3.6C85.9,81.9,85.4,82.3,84.8,82.6z" class="astro-BLWJYJPT"></path>
+          </g>
+          <path class="st2 astro-BLWJYJPT" d="M52.7,15.9l-26.6,6.4c-5.6,1.4-8.7,7.4-6.6,12.7l10.1,25.5c0.6,1.5,1.7,2.7,3.1,3.5l44.5,23.1 c2.5,1.3,5.6,0.3,6.9-2.2l19.9-38.4c1.3-2.5,0.3-5.6-2.2-6.9L57.4,16.5C55.9,15.7,54.3,15.5,52.7,15.9z M41.2,38.2 c-1.5,2.8-5,3.9-7.8,2.5s-3.9-5-2.5-7.8c1.5-2.8,5-3.9,7.8-2.5C41.5,31.9,42.7,35.4,41.2,38.2z"></path>
+          <path class="st1 astro-BLWJYJPT" d="M38.7,30.4c2.8,1.5,4,5,2.5,7.8c-0.8,1.5-2.1,2.5-3.7,2.9c0.9-0.5,1.7-1.3,2.2-2.3c1.5-2.8,0.4-6.3-2.5-7.8 c-1.3-0.7-2.8-0.8-4.1-0.5C34.8,29.6,36.9,29.5,38.7,30.4z"></path>
+          <g class="st1 astro-BLWJYJPT">
+            <path d="M84.8,81.7c-1.3,2.5-4.4,3.5-6.9,2.2L33.4,60.8c-1.4-0.7-2.6-2-3.1-3.5L20.1,31.9c-0.5-1.3-0.7-2.6-0.7-3.8 c-0.8,2.2-0.9,4.6,0,7l10.1,25.5c0.6,1.5,1.7,2.7,3.1,3.5l44.5,23.1c2.5,1.3,5.6,0.3,6.9-2.2l19.9-38.4c0.5-0.9,0.7-2,0.5-3 L84.8,81.7z" class="astro-BLWJYJPT"></path>
+          </g>
+          <path class="st1 astro-BLWJYJPT" d="M32.7,64l44.5,23.1c0.4,0.2,0.8,0.4,1.2,0.4l-1.9,0.9c-0.6-0.1-1.3-0.2-1.9-0.6L30.2,64.8 c-1.4-0.7-2.5-2-3.1-3.5l-8.4-21.1l1.2-4.2l9.7,24.5C30.2,62,31.3,63.3,32.7,64z"></path>
+        </g>
+      </g></svg> &nbsp;<span class="astro-BLWJYJPT">clickhouse</span>
+  </a>
+</li>
+      </ul>
+      <button id="back-to-top" class="focus-outline whitespace-nowrap hover:opacity-75 astro-VJ4TPSPI">
+        <svg xmlns="http://www.w3.org/2000/svg" class="rotate-90 astro-VJ4TPSPI">
+          <path d="M13.293 6.293 7.586 12l5.707 5.707 1.414-1.414L10.414 12l4.293-4.293z" class="astro-VJ4TPSPI"></path>
+        </svg>
+        <span class="astro-VJ4TPSPI">Back to Top</span>
+      </button>
+    </div>
+
+    <hr class="my-6 border-dashed astro-VJ4TPSPI">
+
+    <!-- Previous/Next Post Buttons -->
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 astro-VJ4TPSPI">
+      <a href="/posts/statistics-hdfs-small-files" class="flex w-full gap-1 hover:opacity-75 astro-VJ4TPSPI">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-left flex-none astro-VJ4TPSPI">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" class="astro-VJ4TPSPI"></path><path d="M15 6l-6 6l6 6" class="astro-VJ4TPSPI"></path>
+            </svg>
+            <div class="astro-VJ4TPSPI">
+              <span class="astro-VJ4TPSPI">Previous Post</span>
+              <div class="text-sm text-skin-accent/85 astro-VJ4TPSPI">统计 HDFS 小文件</div>
+            </div>
+          </a>
+      <a href="/posts/notes-on-in-depth-understanding-of-virtual-machines" class="flex w-full justify-end gap-1 text-right hover:opacity-75 sm:col-start-2 astro-VJ4TPSPI">
+            <div class="astro-VJ4TPSPI">
+              <span class="astro-VJ4TPSPI">Next Post</span>
+              <div class="text-sm text-skin-accent/85 astro-VJ4TPSPI">《深入理解虚拟机》笔记</div>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right flex-none astro-VJ4TPSPI">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" class="astro-VJ4TPSPI"></path><path d="M9 6l6 6l-6 6" class="astro-VJ4TPSPI"></path>
+            </svg>
+          </a>
+    </div>
+  </main><footer class="mt-auto astro-SZ7XMLTE">
+  <div class="max-w-4xl mx-auto px-0">
+  <hr class="border-skin-line" aria-hidden="true">
+</div>
+  <div class="footer-wrapper astro-SZ7XMLTE">
+    <div class="copyright-wrapper astro-SZ7XMLTE">
+      <span class="astro-SZ7XMLTE">Powered by <a href="https://github.com/satnaing/astro-paper" class="text-skin-accent decoration-dashed underline-offset-4 hover:underline astro-SZ7XMLTE">
+          Astro-Paper</a></span>
+    </div>
+  </div>
+</footer>
+  </body></html>
+
+
+<script>
+  /** Create a progress indicator
+   *  at the top */
+  function createProgressBar() {
+    // Create the main container div
+    const progressContainer = document.createElement("div");
+    progressContainer.className =
+      "progress-container fixed top-0 z-10 h-1 w-full bg-skin-fill";
+
+    // Create the progress bar div
+    const progressBar = document.createElement("div");
+    progressBar.className = "progress-bar h-1 w-0 bg-skin-accent";
+    progressBar.id = "myBar";
+
+    // Append the progress bar to the progress container
+    progressContainer.appendChild(progressBar);
+
+    // Append the progress container to the document body or any other desired parent element
+    document.body.appendChild(progressContainer);
+  }
+  createProgressBar();
+
+  /** Update the progress bar
+   *  when user scrolls */
+  function updateScrollProgress() {
+    const winScroll =
+      document.body.scrollTop || document.documentElement.scrollTop;
+    const height =
+      document.documentElement.scrollHeight -
+      document.documentElement.clientHeight;
+    const scrolled = (winScroll / height) * 100;
+    if (document) {
+      const myBar = document.getElementById("myBar");
+      if (myBar) {
+        myBar.style.width = scrolled + "%";
+      }
+    }
+  }
+  document.addEventListener("scroll", updateScrollProgress);
+
+  /** Attaches copy buttons to code blocks in the document,
+   * allowing users to copy code easily. */
+  function attachCopyButtons() {
+    let copyButtonLabel = "Copy";
+    let codeBlocks = Array.from(document.querySelectorAll("pre"));
+
+    for (let codeBlock of codeBlocks) {
+      let wrapper = document.createElement("div");
+      wrapper.style.position = "relative";
+
+      let copyButton = document.createElement("button");
+      copyButton.className =
+        "copy-code absolute right-3 -top-3 rounded bg-skin-card px-2 py-1 text-xs leading-4 text-skin-base font-medium";
+      copyButton.innerHTML = copyButtonLabel;
+      codeBlock.setAttribute("tabindex", "0");
+      codeBlock.appendChild(copyButton);
+
+      // wrap codebock with relative parent element
+      codeBlock.parentNode.insertBefore(wrapper, codeBlock);
+      wrapper.appendChild(codeBlock);
+
+      copyButton.addEventListener("click", async () => {
+        await copyCode(codeBlock, copyButton);
+      });
+    }
+
+    async function copyCode(block, button) {
+      let code = block.querySelector("code");
+      let text = code.innerText;
+
+      await navigator.clipboard.writeText(text);
+
+      // visual feedback that task is completed
+      button.innerText = "Copied";
+
+      setTimeout(() => {
+        button.innerText = copyButtonLabel;
+      }, 700);
+    }
+  }
+  attachCopyButtons();
+  document.addEventListener("astro:after-swap", attachCopyButtons);
+
+  /* When the user clicks on the "Back to Top" button,
+   * scroll to the top of the document */
+  document.querySelector("#back-to-top")?.addEventListener("click", () => {
+    document.body.scrollTop = 0; // For Safari
+    document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+  });
+</script>
