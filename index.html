@@ -1,156 +1,234 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="canonical" href="https://donglin94.github.io/">
-    <meta name="generator" content="Astro v2.0.8">
+<html lang="zh">
 
-    <!-- General Meta Tags -->
-    <title>DongLin&#39;s Blog</title>
-    <meta name="title" content="DongLin's Blog">
-    <meta name="description" content="东临的博客">
-    <meta name="author" content="东临">
-    <link rel="sitemap" href="/sitemap-index.xml">
-    <link rel="alternate" type="application/rss+xml" href="http://donglin94.github.io/rss.xml">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>Tw93</title>
+  <meta name="description" content="Hi，我是东临，是一个后端工程师。">
+  <meta property="og:title" content="donglin">
+  <meta property="og:url" content="https://donglin94.github.io">
+  <meta property="og:image" content="https://static.tw93.fun/pic/1.png">
+  <meta property="profile:username" content="donglin">
+  <link rel="shortcut icon" href="https://static.tw93.fun/pic/1.png" type="image/webp">
+  <link rel="stylesheet" href="https://gw.alipayobjects.com/os/k/font/lxgwwenkaiscreenr.css" crossorigin="anonymous">
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="af7f67e5-3c81-4657-afce-5485acb72536"></script>
+  <style>
+    body,
+    html {
+      font-family: "LXGW WenKai Screen R", "Inter";
+      font-style: normal;
+      font-weight: 400;
+      margin: 0;
+      padding: 0;
+      overscroll-behavior: none;
+      font-display: swap;
+      -webkit-font-smoothing: subpixel-antialiased;
+    }
 
-    <!-- Open Graph / Facebook -->
-    <meta property="og:title" content="DongLin's Blog">
-    <meta property="og:description" content="东临的博客">
-    <meta property="og:url" content="https://donglin94.github.io/">
-    <meta property="og:image" content="https://donglin94.github.io/astropaper-og.jpg">
+    .min-h-full {
+      min-height: 100vh;
+    }
 
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://donglin94.github.io/">
-    <meta property="twitter:title" content="DongLin's Blog">
-    <meta property="twitter:description" content="东临的博客">
-    <meta property="twitter:image" content="https://donglin94.github.io/astropaper-og.jpg">
+    .flex {
+      display: flex;
+    }
 
-    <!-- Google Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    .flex-center {
+      align-items: center;
+      justify-content: center;
+    }
 
-    <link rel="stylesheet" href="https://npm.elemecdn.com/lxgw-wenkai-screen-webfont/lxgwwenkaiscreen.css" media="print" onload="this.media='all'">
+    .mt-12 {
+      margin-top: 12px;
+    }
 
-    <meta name="google-site-verification" content="bV_lNTeBfe0KSyR3BBugQCCuntWq18t7FioMb6DyMpU">
+    .mt-16 {
+      margin-top: 16px;
+    }
 
-    <script defer src="https://umami-psi-blush.vercel.app/script.js" data-website-id="babecfec-e561-45ad-8d6a-303698b46449"></script>
+    .mt-28 {
+      margin-top: 28px;
+    }
 
-    <script src="/toggle-theme.js"></script>
-  <link rel="stylesheet" href="/_astro/404.dfc86677.css" />
-<link rel="stylesheet" href="/_astro/about.fcb86bbc.css" />
-<link rel="stylesheet" href="/_astro/index.c3b5fe0f.css" /><script type="module">const e=document.querySelector(".hamburger-menu"),n=document.querySelector("#menu-items")?.classList,t=document.querySelector(".icon-container")?.classList,o=document.querySelector("#first-line")?.classList,a=document.querySelector("#second-line ")?.classList,s=document.querySelector("#third-line")?.classList;e?.addEventListener("click",function(){e?.getAttribute("aria-expanded")==="false"?(e?.setAttribute("aria-expanded","true"),e?.setAttribute("aria-label","Close Menu"),n?.remove("display-none"),t?.remove("flex"),t?.add("relative"),o?.add("rotate-45","absolute","bottom-1/2"),s?.add("display-none"),a?.add("!w-full","-rotate-45","absolute","bottom-1/2")):(e?.setAttribute("aria-expanded","false"),e?.setAttribute("aria-label","Open Menu"),n?.add("display-none"),t?.add("flex"),t?.remove("relative"),o?.remove("rotate-45","absolute","bottom-1/2"),s?.remove("display-none"),a?.remove("!w-full","-rotate-45","absolute","bottom-1/2"))});
-</script></head>
-  <body>
-    <header class="astro-3EF6KSR2">
-  <a id="skip-to-content" href="#main-content" class="astro-3EF6KSR2">Skip to content</a>
-  <div class="nav-container astro-3EF6KSR2">
-    <div class="top-nav-wrap astro-3EF6KSR2">
-      <a href="/" class="logo whitespace-nowrap astro-3EF6KSR2">
-        DongLin&#39;s Blog
-      </a>
-      <nav id="nav-menu" class="astro-3EF6KSR2">
-        <button class="hamburger-menu focus-outline astro-3EF6KSR2" aria-label="Open Menu" aria-expanded="false" aria-controls="menu-items">
-          <div class="icon-container flex astro-3EF6KSR2">
-            <div id="first-line" class="astro-3EF6KSR2"></div>
-            <div id="second-line" class="astro-3EF6KSR2"></div>
-            <div id="third-line" class="astro-3EF6KSR2"></div>
-          </div>
-        </button>
-        <ul id="menu-items" class="display-none sm:flex astro-3EF6KSR2">
-          <li class="astro-3EF6KSR2">
-            <a href="/posts/" class=" astro-3EF6KSR2">
-              Posts
-            </a>
-          </li>
-          <li class="astro-3EF6KSR2">
-            <a href="/about/" class=" astro-3EF6KSR2">
-              About
-            </a>
-          </li>
-          <li class="astro-3EF6KSR2">
-            <a type="button" href="/search/" tabindex="0" class="group focus-outline p-3 sm:p-1  astro-3EF6KSR2 astro-5EUNQZKT" aria-label="search" title="Search">
-  <svg xmlns="http://www.w3.org/2000/svg" class="scale-125 sm:scale-100 astro-3EF6KSR2"><path d="M19.023 16.977a35.13 35.13 0 0 1-1.367-1.384c-.372-.378-.596-.653-.596-.653l-2.8-1.337A6.962 6.962 0 0 0 16 9c0-3.859-3.14-7-7-7S2 5.141 2 9s3.14 7 7 7c1.763 0 3.37-.66 4.603-1.739l1.337 2.8s.275.224.653.596c.387.363.896.854 1.384 1.367l1.358 1.392.604.646 2.121-2.121-.646-.604c-.379-.372-.885-.866-1.391-1.36zM9 14c-2.757 0-5-2.243-5-5s2.243-5 5-5 5 2.243 5 5-2.243 5-5 5z" class="astro-3EF6KSR2"></path>
-              </svg>
-</a>
-          </li>
-          <li class="astro-3EF6KSR2">
-            <button id="theme-btn" class="focus-outline astro-3EF6KSR2" title="Toggles light & dark" aria-label="auto" aria-live="polite">
-                  <svg xmlns="http://www.w3.org/2000/svg" id="moon-svg" class="astro-3EF6KSR2">
-                    <path d="M20.742 13.045a8.088 8.088 0 0 1-2.077.271c-2.135 0-4.14-.83-5.646-2.336a8.025 8.025 0 0 1-2.064-7.723A1 1 0 0 0 9.73 2.034a10.014 10.014 0 0 0-4.489 2.582c-3.898 3.898-3.898 10.243 0 14.143a9.937 9.937 0 0 0 7.072 2.93 9.93 9.93 0 0 0 7.07-2.929 10.007 10.007 0 0 0 2.583-4.491 1.001 1.001 0 0 0-1.224-1.224zm-2.772 4.301a7.947 7.947 0 0 1-5.656 2.343 7.953 7.953 0 0 1-5.658-2.344c-3.118-3.119-3.118-8.195 0-11.314a7.923 7.923 0 0 1 2.06-1.483 10.027 10.027 0 0 0 2.89 7.848 9.972 9.972 0 0 0 7.848 2.891 8.036 8.036 0 0 1-1.484 2.059z" class="astro-3EF6KSR2"></path>
-                  </svg>
-                  <svg xmlns="http://www.w3.org/2000/svg" id="sun-svg" class="astro-3EF6KSR2">
-                    <path d="M6.993 12c0 2.761 2.246 5.007 5.007 5.007s5.007-2.246 5.007-5.007S14.761 6.993 12 6.993 6.993 9.239 6.993 12zM12 8.993c1.658 0 3.007 1.349 3.007 3.007S13.658 15.007 12 15.007 8.993 13.658 8.993 12 10.342 8.993 12 8.993zM10.998 19h2v3h-2zm0-17h2v3h-2zm-9 9h3v2h-3zm17 0h3v2h-3zM4.219 18.363l2.12-2.122 1.415 1.414-2.12 2.122zM16.24 6.344l2.122-2.122 1.414 1.414-2.122 2.122zM6.342 7.759 4.22 5.637l1.415-1.414 2.12 2.122zm13.434 10.605-1.414 1.414-2.122-2.122 1.414-1.414z" class="astro-3EF6KSR2"></path>
-                  </svg>
-                </button>
-          </li>
-        </ul>
-      </nav>
-    </div>
-  </div>
-  <div class="max-w-4xl mx-auto px-4">
-  <hr class="border-skin-line" aria-hidden="true">
-</div>
-</header><main id="main-content" class="astro-J7PV25F6">
-    <section id="hero" class="astro-J7PV25F6">
-      <h1 class="astro-J7PV25F6">👋 Hi.</h1>
-      <a target="_blank" href="/rss.xml" class="rss-link astro-J7PV25F6" aria-label="rss feed" title="RSS Feed">
-        <svg xmlns="http://www.w3.org/2000/svg" class="rss-icon astro-J7PV25F6"><path d="M19 20.001C19 11.729 12.271 5 4 5v2c7.168 0 13 5.832 13 13.001h2z" class="astro-J7PV25F6"></path><path d="M12 20.001h2C14 14.486 9.514 10 4 10v2c4.411 0 8 3.589 8 8.001z" class="astro-J7PV25F6"></path><circle cx="6" cy="18" r="2" class="astro-J7PV25F6"></circle>
-        </svg>
-      </a>
+    .m-auto {
+      margin: auto;
+    }
 
-      <p class="astro-J7PV25F6">I'm Donglin, A backend developer. It's really nice to meet you.</p>
-      <div class="social-wrapper astro-J7PV25F6">
-            <div class="social-links astro-J7PV25F6">Social Links:</div>
-            <div class="social-icons  astro-UPU6FZXR">
-  <a type="button" href="https://github.com/donglin94" tabindex="0" class="group link-button astro-UPU6FZXR astro-5EUNQZKT" title="Fllow me on Github">
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    class="icon-tabler"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-    <path
-      d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"
-    ></path>
-  </svg>
-</a>
-</div>
-          </div>
-    </section>
+    .py-10 {
+      padding: 10px;
+    }
 
-    <div class="max-w-4xl mx-auto px-4">
-  <hr class="border-skin-line" aria-hidden="true">
-</div>
+    .ln-h-22 {
+      line-height: 22px;
+    }
 
-    
+    .page-bg {
+      height: 100vh;
+      inset: 0;
+      position: fixed;
+      width: 100vw;
+      z-index: -1;
+      background: #FFFFFF;
+    }
 
-    <section id="recent-posts" class="astro-J7PV25F6">
-      <h2 class="astro-J7PV25F6">Recent Posts</h2>
-      <ul class="astro-J7PV25F6">
-        <li class="my-6"><a href="/posts/flink-cdc-access-doris-practice/" class="inline-block text-lg font-medium text-skin-accent decoration-dashed underline-offset-4 focus-visible:no-underline focus-visible:underline-offset-0"><h3 class="text-lg font-medium decoration-dashed hover:underline">Flink CDC 接入 Doris 实践</h3></a><div class="flex items-center space-x-2 opacity-80 undefined"><svg xmlns="http://www.w3.org/2000/svg" class="scale-90 inline-block h-6 w-6 fill-skin-base" aria-hidden="true"><path d="M7 11h2v2H7zm0 4h2v2H7zm4-4h2v2h-2zm0 4h2v2h-2zm4-4h2v2h-2zm0 4h2v2h-2z"></path><path d="M5 22h14c1.103 0 2-.897 2-2V6c0-1.103-.897-2-2-2h-2V2h-2v2H9V2H7v2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2zM19 8l.001 12H5V8h14z"></path></svg><span>Posted on:</span><span class="text-sm">2022年3月2日</span></div><p>使用 Flink CDC 实时接入 RDS 数据入 Doris集群</p></li><li class="my-6"><a href="/posts/statistics-hdfs-small-files/" class="inline-block text-lg font-medium text-skin-accent decoration-dashed underline-offset-4 focus-visible:no-underline focus-visible:underline-offset-0"><h3 class="text-lg font-medium decoration-dashed hover:underline">统计 HDFS 小文件</h3></a><div class="flex items-center space-x-2 opacity-80 undefined"><svg xmlns="http://www.w3.org/2000/svg" class="scale-90 inline-block h-6 w-6 fill-skin-base" aria-hidden="true"><path d="M7 11h2v2H7zm0 4h2v2H7zm4-4h2v2h-2zm0 4h2v2h-2zm4-4h2v2h-2zm0 4h2v2h-2z"></path><path d="M5 22h14c1.103 0 2-.897 2-2V6c0-1.103-.897-2-2-2h-2V2h-2v2H9V2H7v2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2zM19 8l.001 12H5V8h14z"></path></svg><span>Posted on:</span><span class="text-sm">2022年2月2日</span></div><p>通过分析 HDFS 的元数据统计小文件数量</p></li>
-      </ul>
-      <div class="all-posts-btn-wrapper astro-J7PV25F6">
-        <a type="button" href="/posts/" tabindex="0" class="group undefined astro-5EUNQZKT">
-  
-          All Posts
-          <svg xmlns="http://www.w3.org/2000/svg" class="astro-J7PV25F6"><path d="m11.293 17.293 1.414 1.414L19.414 12l-6.707-6.707-1.414 1.414L15.586 11H6v2h9.586z" class="astro-J7PV25F6"></path>
-          </svg>
-</a>
+    .display-image {
+      object-fit: cover;
+      border-radius: 50%;
+      display: block;
+      height: 96px;
+      width: 96px;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .page-title {
+      margin-bottom: 0;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .page-full-wrap {
+      margin-top: 24px;
+      padding-bottom: 60px;
+      width: 680px;
+      z-index: 10;
+    }
+
+    .page-item-wrap {
+      transition: transform .15s cubic-bezier(.17, .67, .29, 2.71) 0s;
+      margin: 18px 0;
+    }
+
+    .page-item-wrap:last-child {
+      margin-bottom: 0;
+    }
+
+    .page-item-wrap:hover {
+      transform: translate3d(0px, 0px, 0px) scale(1.015);
+    }
+
+    .page-item {
+      box-sizing: border-box;
+      height: 100%;
+      left: 0;
+      position: absolute;
+      top: 0;
+      width: 100%;
+      z-index: -1;
+      border: 0px solid transparent;
+      background: #f2f2f2;
+      border-radius: 30px;
+    }
+
+    .relative {
+      position: relative;
+    }
+
+    .link-each-image {
+      height: 43px;
+      left: 9px;
+      object-fit: cover;
+      position: absolute;
+      width: 43px;
+      border-radius: 30px;
+    }
+
+    .page-item-each {
+      box-sizing: border-box;
+      overflow: hidden;
+      text-decoration: none;
+      z-index: 10;
+      color: #000000;
+      font-size: 16px;
+      font-weight: 400;
+      text-transform: none;
+      border-radius: 30px;
+      min-height: 60px;
+    }
+
+    .item-title {
+      width: 55%;
+      word-break: break-word;
+      letter-spacing: 0.5px;
+    }
+
+    .page-bioline {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .page-text-font {
+      text-transform: none;
+      letter-spacing: 0.5px;
+    }
+
+    .page-text-color {
+      color: #000000;
+    }
+
+    .top-sec {
+      padding-bottom: 18px;
+      justify-content: space-between;
+    }
+
+    @media (max-width: 768px) {
+      .page-full-wrap {
+        width: 90%;
+      }
+    }
+
+    @media (min-width: 764px) {
+      .top-sec {
+        padding-bottom: 8px;
+      }
+    }
+
+    @media only screen and (max-width: 600px) {
+      body,
+      html {
+        max-height: 100svh;
+        overflow: hidden;
+      }
+
+      .container {
+        align-items: center;
+        flex-direction: column;
+        height: 100svh;
+        justify-content: space-between;
+        overflow-y: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="min-h-full flex flex-center container">
+    <div class="page-full-wrap relative">
+      <div class="flex relative top-sec"></div>
+      <img id="displayImage" class="display-image m-auto" src="https://gw.alipayobjects.com/zos/k/r8/1.jpeg" alt role="presentation">
+      <h1 class="page-title page-text-color page-text-font mt-16 text-center">东临</h1>
+      <h2 class="page-bioline page-text-color page-text-font mt-12 ln-h-22 text-center">一个喜欢折腾和开源的工程师</h2>
+      <div class="mt-28">
+        <div class="page-item-wrap relative">
+          <div class="page-item flex flex-center absolute"></div>
+          <a target="_blank" rel="noopener nofollow" class="page-item-each py-10 flex flex-center" href="https://github.com/donglin94">
+            <img class="link-each-image" src="https://gw.alipayobjects.com/zos/k/rj/IAQScL.png" alt="Github">
+            <span class="item-title text-center">Github</span>
+          </a>
+        </div>
+        <div class="page-item-wrap relative">
+          <div class="page-item flex flex-center absolute"></div>
+          <a target="_blank" rel="noopener nofollow" class="page-item-each py-10 flex flex-center" href="https://donglin94.github.io/blog">
+            <img class="link-each-image" src="https://gw.alipayobjects.com/zos/k/4e/Iq3ZxX.png" alt="博客">
+            <span class="item-title text-center">博客</span>
+          </a>
+        </div>
       </div>
-    </section>
-  </main><footer class="mt-auto astro-SZ7XMLTE">
-  <div class="max-w-4xl mx-auto px-0">
-  <hr class="border-skin-line" aria-hidden="true">
-</div>
-  <div class="footer-wrapper astro-SZ7XMLTE">
-    <div class="copyright-wrapper astro-SZ7XMLTE">
-      <span class="astro-SZ7XMLTE">Powered by <a href="https://github.com/satnaing/astro-paper" class="text-skin-accent decoration-dashed underline-offset-4 hover:underline astro-SZ7XMLTE">
-          Astro-Paper</a></span>
     </div>
   </div>
-</footer>
-  </body></html>
+</body>
+
+</html>
