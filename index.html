@@ -1,232 +1,283 @@
 <!DOCTYPE html>
-<html lang="zh">
-
+<html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-  <title>东临</title>
-  <meta name="description" content="Hi，我是东临，一名后端工程师。">
-  <meta property="og:title" content="donglin">
-  <meta property="og:url" content="https://donglin94.github.io">
-  <meta property="profile:username" content="donglin">
-  <link rel="shortcut icon" href="https://gw.alipayobjects.com/zos/k/4e/Iq3ZxX.png" type="image/webp">
-  <link rel="stylesheet" href="https://gw.alipayobjects.com/os/k/font/lxgwwenkaiscreenr.css" crossorigin="anonymous">
-  <style>
-    body,
-    html {
-      font-family: "LXGW WenKai Screen R", "Inter";
-      font-style: normal;
-      font-weight: 400;
-      margin: 0;
-      padding: 0;
-      overscroll-behavior: none;
-      font-display: swap;
-      -webkit-font-smoothing: subpixel-antialiased;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>东临</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,600&family=JetBrains+Mono:wght@400&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
 
-    .min-h-full {
-      min-height: 100vh;
-    }
+    <style>
+        /* --- 核心变量与美学配置 --- */
+        :root {
+            /* 调色板：灵感来自 70年代的瑞士海报与现代代码编辑器 */
+            --bg-color: #F2F0E9;       /* 暖沙色，比纯白更有纸张质感 */
+            --text-primary: #1A1A1A;   /* 近乎黑的深灰，比纯黑柔和 */
+            --accent-blue: #2E294E;    /* 深靛蓝，用于强调文字 */
+            --highlight-orange: #FF5E35; /* 酸性橙，高能强调色 */
+            --highlight-teal: #2EC4B6;   /* 复古青，辅助色 */
+            
+            /* 字体栈：混排设计 */
+            --font-display: 'Fraunces', serif; /* 标题：充满个性的软衬线 */
+            --font-body: 'Noto Serif SC', serif; /* 正文：优雅的中文宋体 */
+            --font-code: 'JetBrains Mono', monospace; /* 标签/链接：机械感 */
+            
+            /* 布局与间距 */
+            --spacing-unit: 1.5rem;
+            --container-width: 800px;
+            
+            /* 动画曲线：更有弹性和生命力 */
+            --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
 
-    .flex {
-      display: flex;
-    }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    .flex-center {
-      align-items: center;
-      justify-content: center;
-    }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            line-height: 1.7;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            
+            /* 背景纹理：CSS 生成的半调网点 (Halftone) */
+            background-image: radial-gradient(var(--highlight-teal) 1px, transparent 1px);
+            background-size: 30px 30px;
+            padding: var(--spacing-unit);
+        }
 
-    .mt-12 {
-      margin-top: 12px;
-    }
+        /* 增加一个微妙的暗角，聚焦视线 */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.03) 100%);
+            pointer-events: none;
+            z-index: -1;
+        }
 
-    .mt-16 {
-      margin-top: 16px;
-    }
+        .container {
+            width: 100%;
+            max-width: var(--container-width);
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: calc(var(--spacing-unit) * 2);
+            position: relative;
+        }
 
-    .mt-28 {
-      margin-top: 28px;
-    }
+        /* --- 装饰性几何元素 --- */
+        .deco-shape {
+            position: absolute;
+            z-index: -1;
+            opacity: 0.8;
+            mix-blend-mode: multiply; /* 正片叠底，模拟印刷油墨叠加 */
+        }
+        
+        .shape-circle {
+            width: 300px;
+            height: 300px;
+            background-color: #FFCDB2;
+            border-radius: 50%;
+            top: -50px;
+            right: -80px;
+            filter: blur(60px); /* 极度模糊营造氛围 */
+            animation: float 6s ease-in-out infinite;
+        }
 
-    .m-auto {
-      margin: auto;
-    }
+        /* --- 排版设计 --- */
+        header {
+            margin-bottom: var(--spacing-unit);
+        }
 
-    .py-10 {
-      padding: 10px;
-    }
+        h1 {
+            font-family: var(--font-display);
+            font-size: clamp(3rem, 6vw, 5rem);
+            font-weight: 600;
+            line-height: 1;
+            color: var(--accent-blue);
+            letter-spacing: -0.03em;
+            margin-bottom: 1rem;
+            
+            /* 独特的文字阴影风格 */
+            text-shadow: 3px 3px 0px rgba(255, 94, 53, 0.15);
+        }
 
-    .ln-h-22 {
-      line-height: 22px;
-    }
+        .role-tag {
+            display: inline-block;
+            font-family: var(--font-code);
+            font-size: 0.9rem;
+            color: var(--highlight-orange);
+            border: 1px solid var(--highlight-orange);
+            padding: 0.3em 0.8em;
+            border-radius: 50px;
+            transform: rotate(-2deg); /* 俏皮的微倾斜 */
+            margin-bottom: 1.5rem;
+        }
 
-    .page-bg {
-      height: 100vh;
-      inset: 0;
-      position: fixed;
-      width: 100vw;
-      z-index: -1;
-      background: #FFFFFF;
-    }
+        .bio {
+            font-size: clamp(1.1rem, 2vw, 1.3rem);
+            max-width: 60ch;
+            color: #444;
+        }
 
-    .display-image {
-      object-fit: cover;
-      border-radius: 50%;
-      display: block;
-      height: 96px;
-      width: 96px;
-    }
+        .bio strong {
+            color: var(--highlight-orange);
+            font-weight: 700;
+            font-family: var(--font-display);
+        }
 
-    .text-center {
-      text-align: center;
-    }
+        /* --- 链接卡片区域 --- */
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
 
-    .page-title {
-      margin-bottom: 0;
-      font-size: 22px;
-      font-weight: 700;
-    }
+        .card {
+            display: block;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border: 2px solid var(--text-primary);
+            color: var(--text-primary);
+            transition: all 0.4s var(--ease-out-back);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 6px 6px 0px var(--text-primary); /* 粗犷的硬阴影 */
+        }
 
-    .page-full-wrap {
-      margin-top: 24px;
-      padding-bottom: 60px;
-      width: 680px;
-      z-index: 10;
-    }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--highlight-orange);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.4s var(--ease-out-back);
+            z-index: -1;
+        }
 
-    .page-item-wrap {
-      transition: transform .15s cubic-bezier(.17, .67, .29, 2.71) 0s;
-      margin: 18px 0;
-    }
+        .card:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: 10px 10px 0px var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+        
+        .card:hover::before {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
 
-    .page-item-wrap:last-child {
-      margin-bottom: 0;
-    }
+        .card-title {
+            font-family: var(--font-code);
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-desc {
+            font-size: 0.95rem;
+            opacity: 0.8;
+            font-family: var(--font-body);
+        }
 
-    .page-item-wrap:hover {
-      transform: translate3d(0px, 0px, 0px) scale(1.015);
-    }
+        .arrow-icon {
+            transition: transform 0.3s ease;
+        }
 
-    .page-item {
-      box-sizing: border-box;
-      height: 100%;
-      left: 0;
-      position: absolute;
-      top: 0;
-      width: 100%;
-      z-index: -1;
-      border: 0px solid transparent;
-      background: #f2f2f2;
-      border-radius: 30px;
-    }
+        .card:hover .arrow-icon {
+            transform: translateX(5px) translateY(-5px);
+        }
 
-    .relative {
-      position: relative;
-    }
+        /* --- 入场动画 --- */
+        /* 这是一个“交错显示”的策略 */
+        .reveal {
+            opacity: 0;
+            animation: slideUp 0.8s var(--ease-out-back) forwards;
+        }
 
-    .link-each-image {
-      height: 43px;
-      left: 9px;
-      object-fit: cover;
-      position: absolute;
-      width: 43px;
-      border-radius: 30px;
-    }
+        /* 延迟设置 */
+        .d-1 { animation-delay: 0.1s; }
+        .d-2 { animation-delay: 0.3s; }
+        .d-3 { animation-delay: 0.5s; }
+        .d-4 { animation-delay: 0.6s; }
 
-    .page-item-each {
-      box-sizing: border-box;
-      overflow: hidden;
-      text-decoration: none;
-      z-index: 10;
-      color: #000000;
-      font-size: 16px;
-      font-weight: 400;
-      text-transform: none;
-      border-radius: 30px;
-      min-height: 60px;
-    }
+        @keyframes slideUp {
+            0% {
+                opacity: 0;
+                transform: translateY(40px) rotate(1deg);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) rotate(0deg);
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(10px, 20px); }
+        }
 
-    .item-title {
-      width: 55%;
-      word-break: break-word;
-      letter-spacing: 0.5px;
-    }
-
-    .page-bioline {
-      font-size: 16px;
-      font-weight: 500;
-    }
-
-    .page-text-font {
-      text-transform: none;
-      letter-spacing: 0.5px;
-    }
-
-    .page-text-color {
-      color: #000000;
-    }
-
-    .top-sec {
-      padding-bottom: 18px;
-      justify-content: space-between;
-    }
-
-    @media (max-width: 768px) {
-      .page-full-wrap {
-        width: 90%;
-      }
-    }
-
-    @media (min-width: 764px) {
-      .top-sec {
-        padding-bottom: 8px;
-      }
-    }
-
-    @media only screen and (max-width: 600px) {
-      body,
-      html {
-        max-height: 100svh;
-        overflow: hidden;
-      }
-
-      .container {
-        align-items: center;
-        flex-direction: column;
-        height: 100svh;
-        justify-content: space-between;
-        overflow-y: auto;
-      }
-    }
-  </style>
+        /* 响应式微调 */
+        @media (max-width: 600px) {
+            .container { text-align: left; }
+            .card { padding: 1.5rem; }
+        }
+    </style>
 </head>
-
 <body>
-  <div class="min-h-full flex flex-center container">
-    <div class="page-full-wrap relative">
-      <div class="flex relative top-sec"></div>
-      <h1 class="page-title page-text-color page-text-font mt-16 text-center">东临</h1>
-      <h2 class="page-bioline page-text-color page-text-font mt-12 ln-h-22 text-center">一个喜欢折腾的后端工程师</h2>
-      <div class="mt-28">
-        <div class="page-item-wrap relative">
-          <div class="page-item flex flex-center absolute"></div>
-          <a target="_blank" rel="noopener nofollow" class="page-item-each py-10 flex flex-center" href="https://github.com/donglin94">
-            <img class="link-each-image" src="https://gw.alipayobjects.com/zos/k/rj/IAQScL.png" alt="Github">
-            <span class="item-title text-center">Github</span>
-          </a>
-        </div>
-        <div class="page-item-wrap relative">
-          <div class="page-item flex flex-center absolute"></div>
-          <a target="_blank" rel="noopener nofollow" class="page-item-each py-10 flex flex-center" href="https://donglin94.github.io/blog">
-            <img class="link-each-image" src="https://gw.alipayobjects.com/zos/k/4e/Iq3ZxX.png" alt="博客">
-            <span class="item-title text-center">博客</span>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
+
+    <div class="deco-shape shape-circle"></div>
+
+    <main class="container">
+        
+        <header>
+            <div class="role-tag reveal d-1">Architecture Designer & Explorer</div>
+            
+            <h1 class="reveal d-2">Hello,<br>I'm Donglin.</h1>
+            
+            <p class="bio reveal d-3">
+                我是一名 <strong>后端工程师</strong> 。目前专注于 <strong>数据开发</strong>
+            </p>
+        </header>
+
+        <section class="links-grid">
+            <a href="https://github.com/donglin94" target="_blank" class="card reveal d-4">
+                <div class="card-title">
+                    <span>GitHub</span>
+                    <span class="arrow-icon">↗</span>
+                </div>
+                <div class="card-desc">
+                    查看我的开源项目、代码片段与实验性仓库。
+                </div>
+            </a>
+
+            <a href="https://donglin94.github.io/blog" target="_blank" class="card reveal d-4" style="animation-delay: 0.7s;">
+                <div class="card-title">
+                    <span>Blog / Writing</span>
+                    <span class="arrow-icon">↗</span>
+                </div>
+                <div class="card-desc">
+                    关于技术深思、生活随笔以及设计的碎碎念。
+                </div>
+            </a>
+        </section>
+
+    </main>
 </body>
-
 </html>
-
